@@ -8,6 +8,8 @@ class ImageLoader {
     ctx: CanvasRenderingContext2D
     ctx2: CanvasRenderingContext2D
     canvas: HTMLCanvasElement
+    offCanvas: HTMLCanvasElement
+    offCtx: CanvasRenderingContext2D
     mouse: { x: number; y: number } = { x: 0, y: 0 }
     originX = 0
     originY = 0
@@ -20,6 +22,9 @@ class ImageLoader {
         this.ctx2 = canvas2.getContext('2d')!;
         this.canvas = canvas;
 
+        this.offCanvas = document.createElement('canvas');
+        this.offCtx = this.offCanvas.getContext('2d')!;
+
         this.mouse = (window as any).tools.getMouse(canvas);
         this.init();
     }
@@ -28,6 +33,10 @@ class ImageLoader {
         img1.src = image04;
         this.img1 = img1;
         img1.onload = () => {
+            this.offCanvas.width = img1.width;
+            this.offCanvas.height = img1.height;
+            this.offCtx.drawImage(img1, 0, 0);
+
             let scale = Math.min(this.canvas.width / img1.width, this.canvas.height / img1.height);
             this.scale = scale;
 
@@ -56,7 +65,7 @@ class ImageLoader {
         let imgW = this.img1?.width!;
         let imgH = this.img1?.height!;
         console.log('dx', dx, dy, imgW * this.scale, imgH * this.scale);
-        this.ctx.drawImage(this.img1!, dx, dy, imgW * this.scale, imgH * this.scale);
+        this.ctx.drawImage(this.offCanvas, dx, dy, imgW * this.scale, imgH * this.scale);
 
         this.originX = dx;
         this.originY = dy;
@@ -107,9 +116,10 @@ class ImageLoader {
             let sx = (rectX - this.originX) / this.scale;
             let sy = (rectY - this.originY) / this.scale;
             console.log(sx, sy, rectW / this.scale, rectH / this.scale, rectX, rectY, rectW * this.scale, rectH * this.scale);
-            // this.reset();
-            // 合并图片
-            this.ctx.drawImage(this.img2!, sx, sy, rectW / this.scale, rectH / this.scale, rectX, rectY, rectW, rectH);
+
+
+            this.offCtx.drawImage(this.img2!, sx, sy, rectW / this.scale, rectH / this.scale, sx, sy, rectW / this.scale, rectH / this.scale);
+            this.drawImage(this.originX, this.originY);
 
         }, 200));
     }
