@@ -1,0 +1,9 @@
+.basic {
+    display: flex
+}
+.basic .left {
+    width: 100px;
+}
+.basic .right {
+    width: auto;
+}

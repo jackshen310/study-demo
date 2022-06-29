@@ -1,8 +1,9 @@
 import { memo } from "react";
-import LargeImage from "./large-image"
+import Basic from "./basic";
 
 const CanvasDemo = memo(() => {
-    return <LargeImage key="123" />
-})
+  // return <LargeImage key="123" />
+  return <Basic key="basic" />;
+});
 
 export default CanvasDemo;
