@@ -6,21 +6,21 @@ import lodash from 'lodash';
 
 class ImageLoader {
     ctx: CanvasRenderingContext2D
-    ctx2: CanvasRenderingContext2D
     canvas: HTMLCanvasElement
     offCanvas: HTMLCanvasElement
     offCtx: CanvasRenderingContext2D
     mouse: { x: number; y: number } = { x: 0, y: 0 }
-    originX = 0
-    originY = 0
-    scale = 1
+    dx = 0
+    dy = 0
+    scale = 0
     img1: HTMLImageElement | null = null
     img2: HTMLImageElement | null = null
+    stag: Array<string> = []
 
-    constructor(canvas: HTMLCanvasElement, canvas2: HTMLCanvasElement) {
-        this.ctx = canvas.getContext('2d')!;
-        this.ctx2 = canvas2.getContext('2d')!;
+    constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
+        this.ctx = canvas.getContext('2d')!;
+
 
         this.offCanvas = document.createElement('canvas');
         this.offCtx = this.offCanvas.getContext('2d')!;
@@ -31,7 +31,7 @@ class ImageLoader {
     init() {
         const img1 = new Image();
         img1.src = image04;
-        this.img1 = img1;
+
         img1.onload = () => {
             this.offCanvas.width = img1.width;
             this.offCanvas.height = img1.height;
@@ -40,35 +40,28 @@ class ImageLoader {
             let scale = Math.min(this.canvas.width / img1.width, this.canvas.height / img1.height);
             this.scale = scale;
 
-            let imgW = img1.width;
-            let imgH = img1.height;
-            let dx = this.canvas.width / 2 - imgW * scale / 2;
-            let dy = this.canvas.height / 2 - imgH * scale / 2;
 
-            this.drawImage(dx, dy);
+            this.dx = this.canvas.width / 2 - img1.width * scale / 2;
+            this.dy = this.canvas.height / 2 - img1.height * scale / 2;
 
+            this.drawImage();
+
+            this.img1 = img1;
         };
 
         const img2 = new Image();
         img2.src = image03;
         this.img2 = img2;
-        img2.onload = () => {
-            this.ctx2.drawImage(img2, 0, 0);
-        };
 
         this.initEventListener();
     }
     reset() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
     }
-    drawImage(dx: number, dy: number) {
-        let imgW = this.img1?.width!;
-        let imgH = this.img1?.height!;
-        console.log('dx', dx, dy, imgW * this.scale, imgH * this.scale);
-        this.ctx.drawImage(this.offCanvas, dx, dy, imgW * this.scale, imgH * this.scale);
-
-        this.originX = dx;
-        this.originY = dy;
+    drawImage() {
+        let width = this.offCanvas.width;
+        let height = this.offCanvas.height;
+        this.ctx.drawImage(this.offCanvas, this.dx, this.dy, width * this.scale, height * this.scale);
     }
     initEventListener() {
         let startX: number;
@@ -83,14 +76,12 @@ class ImageLoader {
 
             let x1 = endX - startX;
             let y1 = endY - startY;
-            let dx = this.originX + x1;
-            let dy = this.originY + y1;
+            this.dx = this.dx + x1;
+            this.dy = this.dy + y1;
 
-            console.log(x1, y1, this.mouse, this.originX, this.originY);
             this.reset();
 
-            // this.ctx.setTransform(0, 0, 0, 0, dx, dy);
-            this.drawImage(dx, dy);
+            this.drawImage();
 
             startX = endX;
             startY = endY;
@@ -110,24 +101,45 @@ class ImageLoader {
             let rectH = 256;
             let eventX = this.mouse.x;
             let eventY = this.mouse.y;
-            let rectX = eventX - rectW / 2;
-            let rectY = eventY - rectH / 2;
 
-            let sx = (rectX - this.originX) / this.scale;
-            let sy = (rectY - this.originY) / this.scale;
-            console.log(sx, sy, rectW / this.scale, rectH / this.scale, rectX, rectY, rectW * this.scale, rectH * this.scale);
+            let imgX = (eventX - this.dx) / this.scale;
+            let imgY = (eventY - this.dy) / this.scale;
 
+            let num = Math.ceil(Math.max(1, Math.floor(1 / this.scale)) / 2);
+            let indexX = Math.ceil(imgX / rectW);
+            let indexY = Math.ceil(imgY / rectH);
+            let flag = false;
+            for (let i = -num; i < num; i++) {
+                for (let j = -num; j < num; j++) {
+                    let x = indexX + i;
+                    let y = indexY + j;
+                    if (x < 0 || y < 0) {
+                        continue;
+                    }
+                    let index = (x) + '-' + (y);
+                    if (this.stag.includes(index)) {
+                        console.log('缓存已经有啦！', this.stag);
+                    } else {
+                        console.log('缓存没有哦', this.stag);
+                        flag = true;
+                        let sx = (x) * rectW;
+                        let sy = (y) * rectH;
 
-            this.offCtx.drawImage(this.img2!, sx, sy, rectW / this.scale, rectH / this.scale, sx, sy, rectW / this.scale, rectH / this.scale);
-            this.drawImage(this.originX, this.originY);
+                        this.offCtx.drawImage(this.img2!, sx, sy, rectW, rectH, sx, sy, rectW, rectH);
 
-        }, 200));
+                        this.stag.push(index);
+                    }
+                }
+
+            }
+            flag && this.drawImage();
+
+        }, 50));
     }
-    handleScale(s: number) {
+    handleScale(scale: number) {
         this.reset();
-        this.scale = this.scale * s;
-        this.drawImage(this.originX, this.originY);
-
+        this.scale = this.scale * scale;
+        this.drawImage();
     }
 }
 
