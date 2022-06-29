@@ -1,6 +1,8 @@
 
-import image03 from '../images/03.jpeg'; // 原图
-import image04 from '../images/04.jpeg'; // 压缩图
+import image01 from '../images/03.jpeg'; // 原图
+import _image01 from '../images/04.jpeg'; // 压缩图
+import image02 from '../images/Image_20220621160425059.bmp'; // 原图
+import _image02 from '../images/Image_20220621160425059.jpg'; // 压缩图
 import './tools'
 import lodash from 'lodash';
 
@@ -16,6 +18,8 @@ class ImageLoader {
     img1: HTMLImageElement | null = null
     img2: HTMLImageElement | null = null
     stag: Array<string> = []
+    images: Array<string[]> = [];
+    curImage: Array<string> = [];
 
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
@@ -26,12 +30,13 @@ class ImageLoader {
         this.offCtx = this.offCanvas.getContext('2d')!;
 
         this.mouse = (window as any).tools.getMouse(canvas);
+        this.addImage();
         this.init();
+        this.initEventListener();
     }
     init() {
         const img1 = new Image();
-        img1.src = image04;
-
+        img1.src = this.curImage[1];
         img1.onload = () => {
             this.offCanvas.width = img1.width;
             this.offCanvas.height = img1.height;
@@ -48,12 +53,26 @@ class ImageLoader {
 
             this.img1 = img1;
         };
+        img1.onerror = (e) => {
+            console.log(e);
+        }
 
         const img2 = new Image();
-        img2.src = image03;
+        img2.src = this.curImage[0];
         this.img2 = img2;
+        img2.onerror = (e) => {
+            console.log(e);
+        }
+    }
+    setImage(index: number) {
+        this.curImage = this.images[index];
+        this.init();
+    }
+    addImage() {
+        this.images.push([image01, _image01]);
+        this.images.push([image02, _image02]);
 
-        this.initEventListener();
+        this.curImage = this.images[0];
     }
     reset() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
@@ -108,6 +127,9 @@ class ImageLoader {
             let num = Math.ceil(Math.max(1, Math.floor(1 / this.scale)) / 2);
             let indexX = Math.ceil(imgX / rectW);
             let indexY = Math.ceil(imgY / rectH);
+            if (isNaN(indexX)) {
+                return;
+            }
             let flag = false;
             for (let i = -num; i < num; i++) {
                 for (let j = -num; j < num; j++) {
@@ -118,7 +140,7 @@ class ImageLoader {
                     }
                     let index = (x) + '-' + (y);
                     if (this.stag.includes(index)) {
-                        console.log('缓存已经有啦！', this.stag);
+                        // console.log('缓存已经有啦！', this.stag);
                     } else {
                         console.log('缓存没有哦', this.stag);
                         flag = true;

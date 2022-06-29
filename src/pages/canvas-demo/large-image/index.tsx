@@ -1,12 +1,11 @@
 import React, { useEffect, useRef, useState, memo } from 'react';
-import image02 from '../images/02.jpg';
-import image03 from '../images/03.jpeg';
-import image04 from '../images/04.jpeg';
 import ImageLoader from './ImageLoader';
+import "./index.css";
 
 const LargeImage = memo(() => {
     const canvasRef = useRef(null)
     const [loader, setLoader] = useState<ImageLoader>();
+    const [selectIndex, setSelectIndex] = useState(0);
     useEffect(() => {
         if ((window as any).loader) {
             return;
@@ -24,9 +23,28 @@ const LargeImage = memo(() => {
     const handleDel = () => {
         loader?.handleScale(0.8);
     }
+
+    const handleClick = (index: number) => {
+        loader?.setImage(index);
+        setSelectIndex(index);
+    }
+    const renderImage = () => {
+        return loader?.images.map((item, index) => {
+            let className = ""
+            if (selectIndex == index) {
+                className = "active";
+            }
+            return <li onClick={(e) => {
+                e.preventDefault();
+                handleClick(index);
+            }} className={className}>image_{index + 1}</li>
+        });
+    }
     return <div>
-        <canvas ref={canvasRef} key="1" style={{ border: '1px solid green' }} id="canvas" width="1000" height="1000"></canvas>
-        <div></div>
+        <div className="large-image">
+            <ul className="left">{renderImage()}</ul>
+            <canvas className="right" ref={canvasRef} key="1" style={{ border: '1px solid green' }} id="canvas" width="1000" height="1000"></canvas>
+        </div>
         <button onClick={handleAdd}>放大</button><button onClick={handleDel}>缩小</button>
     </div >
 })

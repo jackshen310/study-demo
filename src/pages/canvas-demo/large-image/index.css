@@ -1,0 +1,15 @@
+.large-image {
+    display: flex
+}
+.large-image .left {
+    width: 100px;
+}
+.large-image .left li {
+    list-style: none;
+}
+.large-image .left li.active {
+    background-color: cornflowerblue;
+}
+.large-image .right {
+    width: auto;
+}
