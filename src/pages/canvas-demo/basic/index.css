@@ -7,3 +7,6 @@
 .basic .right {
     width: auto;
 }
+.basic .right p {
+   text-align: center;
+}

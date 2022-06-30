@@ -5,6 +5,7 @@ import Editor from "./editor";
 const CanvasBasic = () => {
   const canvasRef = useRef<any>();
   const [editor, setEditor] = useState<Editor>();
+  const [mouse, setMouse] = useState<any>({});
 
   useEffect(() => {
     let editor = new Editor(canvasRef.current);
@@ -13,9 +14,39 @@ const CanvasBasic = () => {
     (window as any).editor = editor;
   }, []);
 
+  useEffect(() => {
+    const onMouseMove = () => {
+      setMouse({ ...editor?.getMouse() });
+    };
+    const canvas = canvasRef.current;
+    canvas.addEventListener("mousemove", onMouseMove);
+
+    return () => {
+      canvas.removeEventListener("mousemove", onMouseMove);
+    };
+  }, [editor]);
+
   const renderBtn = () => {
     let btns: { click: MouseEventHandler; text: string }[] = [];
     btns.push(
+      {
+        click: () => {
+          editor?.clearRect();
+        },
+        text: "清空画布",
+      },
+      {
+        click: () => {
+          editor?.save();
+        },
+        text: "保存状态",
+      },
+      {
+        click: () => {
+          editor?.restore();
+        },
+        text: "恢复状态",
+      },
       {
         click: () => {
           editor?.drawLine();
@@ -111,6 +142,54 @@ const CanvasBasic = () => {
           editor?.rotate();
         },
         text: "旋转",
+      },
+      {
+        click: () => {
+          editor?.setTransform();
+        },
+        text: "setTransform",
+      },
+      {
+        click: () => {
+          editor?.getImageData();
+        },
+        text: "反转效果",
+      },
+      {
+        click: () => {
+          editor?.averageImage();
+        },
+        text: "灰度图",
+      },
+      {
+        click: () => {
+          editor?.createLinearGradient();
+        },
+        text: "渐变色",
+      },
+      {
+        click: () => {
+          editor?.beginPath();
+        },
+        text: "三角形",
+      },
+      {
+        click: () => {
+          editor?.shadow();
+        },
+        text: "阴影",
+      },
+      {
+        click: () => {
+          editor?.drawArrow();
+        },
+        text: "画箭头",
+      },
+      {
+        click: () => {
+          editor?.drawBall();
+        },
+        text: "小球运动",
       }
     );
 
@@ -120,18 +199,24 @@ const CanvasBasic = () => {
       </button>
     ));
   };
+
   return (
     <div>
       <div className="basic">
         <div className="left">{renderBtn()}</div>
-        <canvas
-          className="right"
-          ref={canvasRef}
-          style={{ border: "1px solid green" }}
-          id="canvas"
-          width="800"
-          height="600"
-        ></canvas>
+        <div className="right">
+          <p>
+            当前坐标 x:{mouse.x} , y:{mouse.y}
+          </p>
+          <canvas
+            key="canvas"
+            ref={canvasRef}
+            style={{ border: "1px solid green" }}
+            id="canvas"
+            width="800"
+            height="600"
+          ></canvas>
+        </div>
       </div>
     </div>
   );

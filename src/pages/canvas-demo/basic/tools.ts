@@ -1,4 +1,9 @@
+export type Mouse = {
+  x: number;
+  y: number;
+};
 class Tools {
+  static __mouse: Mouse;
   /**
    *
    * @returns 获取随机颜色
@@ -43,6 +48,48 @@ class Tools {
     ctx.lineTo(sx, sy + r);
     ctx.arcTo(sx, sy, sx + r, sy, r);
     ctx.closePath();
+  }
+
+  /**
+   * 获取鼠标坐标
+   * @param element
+   * @returns
+   */
+  getMouse(element: HTMLElement): Mouse {
+    if (Tools.__mouse) {
+      return Tools.__mouse;
+    }
+    const mouse = { x: 0, y: 0 };
+
+    element.addEventListener(
+      "mousemove",
+      function (e) {
+        let x, y;
+        e = e || window.event;
+        if (e.pageX || e.pageY) {
+          x = e.pageX;
+          y = e.pageY;
+        } else {
+          x =
+            e.clientX +
+            document.body.scrollLeft +
+            document.documentElement.scrollLeft;
+          y =
+            e.clientY +
+            document.body.scrollTop +
+            document.documentElement.scrollTop;
+        }
+        x -= element.offsetLeft;
+        y -= element.offsetTop;
+
+        mouse.x = x;
+        mouse.y = y;
+      },
+      false
+    );
+
+    Tools.__mouse = mouse;
+    return mouse;
   }
 }
 

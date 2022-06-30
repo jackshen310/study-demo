@@ -1,5 +1,7 @@
 import Tools from "./tools";
 import avatar from "../images/avatar.jpg";
+import Arrow from "./arrow";
+import Ball from "./ball";
 
 const R = Math.PI / 180;
 class Editor {
@@ -15,7 +17,27 @@ class Editor {
     this.init();
   }
 
-  init() {}
+  init() {
+    const { ctx } = this;
+    window.addEventListener("keydown", (e) => {
+      console.log(e);
+      let step = 2;
+      switch (e.key) {
+        case "ArrowUp":
+          ctx.translate(0, -step);
+          break;
+        case "ArrowDown":
+          ctx.translate(0, step);
+          break;
+        case "ArrowLeft":
+          ctx.translate(-step, 0);
+          break;
+        case "ArrowRight":
+          ctx.translate(step, 0);
+          break;
+      }
+    });
+  }
 
   drawLine() {
     const { ctx } = this;
@@ -107,13 +129,13 @@ class Editor {
     ctx.fillStyle = tools.getRandomColor();
     ctx.fillText("Canvas", 100, 200);
   }
-  drawImage(callback?: Function) {
+  drawImage(callback?: (img: HTMLImageElement) => void) {
     const { ctx, tools } = this;
     let img = new Image();
     img.src = avatar;
     img.onload = () => {
       ctx.drawImage(img, 100, 100);
-      callback && callback();
+      callback && callback(img);
     };
   }
   // 图片平铺
@@ -170,6 +192,126 @@ class Editor {
       ctx.rotate(10 * R);
       ctx.drawImage(img, 0, 0);
     };
+  }
+
+  setTransform() {
+    const { ctx } = this;
+    ctx.setTransform(1, 0, 0, 1, 50, 100); // 重复调用setTransform以最后一次为准
+    this.fillRect();
+  }
+  // 反转效果
+  getImageData() {
+    const { ctx } = this;
+    this.drawImage((img) => {
+      let imgData = ctx.getImageData(100, 100, img.width, img.height);
+      let data = imgData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        data[i] = 255 - data[i];
+        data[i + 1] = 255 - data[i + 1];
+        data[i + 2] = 255 - data[i + 2];
+      }
+      ctx.putImageData(imgData, 0, 0);
+    });
+  }
+  // 灰度图
+  averageImage() {
+    const { ctx } = this;
+    this.drawImage((img) => {
+      let imgData = ctx.getImageData(100, 100, img.width, img.height);
+      let data = imgData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        let avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        data[i] = avg;
+        data[i + 1] = avg;
+        data[i + 2] = avg;
+      }
+      ctx.putImageData(imgData, 0, 0);
+    });
+  }
+  // 渐变色
+  createLinearGradient() {
+    const { ctx } = this;
+    let gnt = ctx.createLinearGradient(0, 50, 100, 50);
+    gnt.addColorStop(0, "green");
+    gnt.addColorStop(1, "red");
+    ctx.fillStyle = gnt;
+
+    ctx.fillRect(0, 0, 100, 100);
+  }
+  // 画一个三角形
+  beginPath() {
+    const { ctx } = this;
+    ctx.beginPath();
+    ctx.moveTo(100, 100);
+    ctx.lineTo(100, 200);
+    ctx.lineTo(200, 200);
+    ctx.closePath(); // 相当于 ctx.lineTo(100,100);
+    ctx.stroke();
+  }
+  save() {
+    this.ctx.save();
+  }
+
+  restore() {
+    this.ctx.restore();
+  }
+  // 阴影效果
+  shadow() {
+    const { ctx, tools } = this;
+    ctx.shadowOffsetX = 5;
+    ctx.shadowOffsetY = 5;
+    ctx.shadowColor = tools.getRandomColor();
+    // ctx.shadowBlur = 10;
+    this.fillRect();
+  }
+
+  getMouse() {
+    const { canvas, tools } = this;
+    return tools.getMouse(canvas);
+  }
+
+  drawArrow() {
+    const { ctx, tools, canvas } = this;
+
+    const mouse = this.getMouse();
+    let arrow = new Arrow(
+      canvas.width / 2,
+      canvas.height / 2,
+      tools.getRandomColor(),
+      0
+    );
+    arrow.stroke(ctx);
+    window.setInterval(() => {
+      this.clearRect();
+      let x = mouse.x - canvas.width / 2;
+      let y = mouse.y - canvas.height / 2;
+      arrow.angle = Math.atan2(y, x);
+      arrow.stroke(ctx);
+    }, 50);
+  }
+
+  drawBall() {
+    const { ctx, tools, canvas } = this;
+
+    let ball = new Ball(100, 25, 20, tools.getRandomColor());
+    let angle = 0;
+    let radius = 100; // 圆的半径
+    window.setInterval(() => {
+      this.clearRect();
+
+      // 绘制圆形
+      ctx.beginPath();
+      ctx.arc(canvas.width / 2, canvas.height / 2, radius, 0, 360 * R);
+      ctx.closePath();
+      ctx.stroke();
+
+      // 修改小球坐标
+      ball.x = canvas.width / 2 + Math.cos(angle) * radius;
+      ball.y = canvas.height / 2 + Math.sin(angle) * radius;
+      ball.fill(ctx);
+
+      angle += 0.05;
+    }, 500);
   }
 }
 
