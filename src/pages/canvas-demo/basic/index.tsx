@@ -57,6 +57,60 @@ const Basic = () => {
           editor?.createRounderRect();
         },
         text: "圆角矩形",
+      },
+      {
+        click: () => {
+          editor?.lineWidth();
+        },
+        text: "线条宽度",
+      },
+      {
+        click: () => {
+          editor?.strokeText();
+        },
+        text: "描边文本",
+      },
+      {
+        click: () => {
+          editor?.fillText();
+        },
+        text: "填充文本",
+      },
+      {
+        click: () => {
+          editor?.drawImage();
+        },
+        text: "画图",
+      },
+      {
+        click: () => {
+          editor?.createPattern();
+        },
+        text: "背景图填充",
+      },
+      {
+        click: () => {
+          editor?.clip();
+        },
+        text: "裁剪",
+      },
+      {
+        click: () => {
+          editor?.translate();
+        },
+        text: "移动",
+      },
+      {
+        click: () => {
+          editor?.scale();
+        },
+        text: "缩放",
+      },
+      {
+        click: () => {
+          editor?.rotate();
+        },
+        text: "旋转",
       }
     );
 

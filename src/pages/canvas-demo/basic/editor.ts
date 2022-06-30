@@ -1,5 +1,5 @@
-import { text } from "stream/consumers";
 import Tools from "./tools";
+import avatar from "../images/avatar.jpg";
 
 const R = Math.PI / 180;
 class Editor {
@@ -72,6 +72,104 @@ class Editor {
   createRounderRect() {
     const { ctx, tools } = this;
     tools.createRounderRect(ctx, 100, 50, 5, 100, 100);
+  }
+
+  lineWidth() {
+    const { ctx, tools } = this;
+    ctx.beginPath(); // 注意beginPath
+    ctx.lineWidth = 5;
+    ctx.moveTo(200, 200);
+    ctx.lineTo(300, 200);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.lineWidth = 10;
+    ctx.moveTo(200, 250);
+    ctx.lineTo(300, 250);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.lineWidth = 15;
+    ctx.moveTo(200, 300);
+    ctx.lineTo(300, 300);
+    ctx.stroke();
+  }
+
+  strokeText() {
+    const { ctx, tools } = this;
+    ctx.font = "bold 30px 微软雅黑";
+    ctx.strokeStyle = tools.getRandomColor();
+    ctx.strokeText("Canvas", 100, 100);
+  }
+  fillText() {
+    const { ctx, tools } = this;
+    ctx.font = "bold 30px 微软雅黑";
+    ctx.fillStyle = tools.getRandomColor();
+    ctx.fillText("Canvas", 100, 200);
+  }
+  drawImage(callback?: Function) {
+    const { ctx, tools } = this;
+    let img = new Image();
+    img.src = avatar;
+    img.onload = () => {
+      ctx.drawImage(img, 100, 100);
+      callback && callback();
+    };
+  }
+  // 图片平铺
+  createPattern() {
+    const { ctx, canvas } = this;
+    let img = new Image();
+    img.src = avatar;
+    img.onload = () => {
+      let pattern = ctx.createPattern(img, "repeat")!;
+      ctx.fillStyle = pattern;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    };
+  }
+  // 裁剪
+  clip() {
+    const { ctx } = this;
+    /**
+    （1）绘制基本图形。
+    （2）使用clip()方法。
+    （3）绘制图片。
+     */
+    ctx.arc(150, 150, 50, 0, 360 * R);
+    ctx.clip();
+    this.drawImage();
+  }
+  clearRect() {
+    const { ctx, canvas } = this;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  // 移动
+  translate() {
+    const { ctx } = this;
+    this.fillRect();
+    setInterval(() => {
+      this.clearRect(); // 先清除画布
+      ctx.translate(50, 0);
+      this.fillRect();
+    }, 1000);
+  }
+
+  scale() {
+    const { ctx } = this;
+    this.fillRect();
+    ctx.scale(2, 2);
+    this.drawImage();
+  }
+
+  rotate() {
+    const { ctx } = this;
+    let img = new Image();
+    img.src = avatar;
+    img.onload = () => {
+      ctx.translate(100, 100);
+      ctx.rotate(10 * R);
+      ctx.drawImage(img, 0, 0);
+    };
   }
 }
 
