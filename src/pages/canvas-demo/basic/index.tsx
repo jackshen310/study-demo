@@ -2,7 +2,7 @@ import { MouseEventHandler, useEffect, useRef, useState } from "react";
 import "./index.css";
 import Editor from "./editor";
 
-const Basic = () => {
+const CanvasBasic = () => {
   const canvasRef = useRef<any>();
   const [editor, setEditor] = useState<Editor>();
 
@@ -136,4 +136,4 @@ const Basic = () => {
     </div>
   );
 };
-export default Basic;
+export default CanvasBasic;
