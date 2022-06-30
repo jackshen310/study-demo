@@ -1,35 +1,35 @@
 import React, { useEffect, useRef, useState, memo } from "react";
-import ImageLoader from "./ImageLoader";
+import Editor from "./editor";
 import "./index.css";
 
 const CanvasGrid = memo(() => {
   const canvasRef = useRef(null);
-  const [loader, setLoader] = useState<ImageLoader>();
+  const [editor, setEditor] = useState<Editor>();
   const [selectIndex, setSelectIndex] = useState(0);
   useEffect(() => {
-    if ((window as any).loader) {
+    if ((window as any).gridEditor) {
       return;
     }
     const canvas = canvasRef.current! as HTMLCanvasElement;
-    const loader = new ImageLoader(canvas);
-    (window as any).loader = loader;
-    loader.init();
-    setLoader(loader);
+    const editor = new Editor(canvas);
+    (window as any).gridEditor = editor;
+    editor.init();
+    setEditor(editor);
   }, []);
 
   const handleAdd = () => {
-    loader?.handleScale(1.2);
+    editor?.handleScale(1.2);
   };
   const handleDel = () => {
-    loader?.handleScale(0.8);
+    editor?.handleScale(0.8);
   };
 
   const handleClick = (index: number) => {
-    loader?.setImage(index);
+    editor?.setImage(index);
     setSelectIndex(index);
   };
   const renderImage = () => {
-    return loader?.images.map((item, index) => {
+    return editor?.images.map((item, index) => {
       let className = "";
       if (selectIndex == index) {
         className = "active";

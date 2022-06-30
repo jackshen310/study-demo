@@ -1,4 +1,8 @@
 class Tools {
+  /**
+   *
+   * @returns 获取随机颜色
+   */
   getRandomColor() {
     return (
       "#" +
@@ -11,6 +15,15 @@ class Tools {
       })("")
     );
   }
+  /**
+   * 绘制圆角矩形
+   * @param ctx
+   * @param width
+   * @param height
+   * @param r
+   * @param sx
+   * @param sy
+   */
   createRounderRect(
     ctx: CanvasRenderingContext2D,
     width: number,
