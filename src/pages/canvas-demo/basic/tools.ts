@@ -92,14 +92,35 @@ class Tools {
             document.body.scrollTop +
             document.documentElement.scrollTop;
         }
-        x -= element.offsetLeft;
-        y -= element.offsetTop;
+
+        const { offsetLeft, offsetTop } = getElementPagePosition(element);
+
+        x -= offsetLeft;
+        y -= offsetTop;
 
         mouse.x = x;
         mouse.y = y;
       },
       false
     );
+
+    // 获取元素的绝对位置坐标（像对于页面左上角）
+    function getElementPagePosition(element: HTMLElement) {
+      //计算x坐标
+      let actualLeft = element.offsetLeft;
+      let current = element.offsetParent as any;
+      while (current !== null) {
+        actualLeft += current.offsetLeft;
+        current = current.offsetParent;
+      } //计算y坐标
+      let actualTop = element.offsetTop;
+      current = element.offsetParent;
+      while (current !== null) {
+        actualTop += current.offsetTop + current.clientTop;
+        current = current.offsetParent;
+      } //返回结果
+      return { offsetLeft: actualLeft, offsetTop: actualTop };
+    }
 
     Tools.__mouse = mouse;
     return mouse;

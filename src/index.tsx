@@ -6,6 +6,7 @@ import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import CanvasGrid from "./pages/canvas-demo/grid";
 import CanvasBasic from "./pages/canvas-demo/basic";
+import CanvasBox from "./pages/canvas-demo/box";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -15,6 +16,7 @@ root.render(
     <Routes>
       <Route path="/" element={<App />} />
       <Route path="canvas-basic" element={<CanvasBasic />} />
+      <Route path="canvas-box" element={<CanvasBox />} />
       <Route path="canvas-grid" element={<CanvasGrid />} />
     </Routes>
   </BrowserRouter>

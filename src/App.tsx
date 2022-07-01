@@ -11,8 +11,9 @@ function App() {
           paddingBottom: "1rem",
         }}
       >
-        <Link to="/canvas-basic">canvas基础</Link>|{" "}
-        <Link to="/canvas-grid">canvas大图网格加载</Link>
+        <Link to="/canvas-basic">canvas基础知识</Link>|{" "}
+        <Link to="/canvas-box">canvas基础图形</Link>|{" "}
+        <Link to="/canvas-grid">canvas大图加载</Link>
       </nav>
     </div>
   );
