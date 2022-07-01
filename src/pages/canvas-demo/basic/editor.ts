@@ -540,9 +540,35 @@ class Editor {
     });
   }
 
-  // 缓动动画
-  easing() {
-    const { ctx, tools } = this;
+  // 手动画一条线
+  drawLineA() {
+    const { ctx, canvas } = this;
+    let sx: number, sy: number, dx, dy;
+
+    const onMouseMove = () => {
+      this.clearRect();
+      ctx.save();
+      let mouse = this.getMouse();
+      dx = mouse.x;
+      dy = mouse.y;
+      ctx.beginPath();
+      ctx.moveTo(sx, sy);
+      ctx.lineTo(dx, dy);
+      ctx.stroke();
+      ctx.restore();
+    };
+    const onMouseUp = () => {
+      canvas.removeEventListener("mousemove", onMouseMove);
+      canvas.removeEventListener("mouseup", onMouseUp);
+    };
+
+    canvas.addEventListener("mousedown", () => {
+      let mouse = this.getMouse();
+      sx = mouse.x;
+      sy = mouse.y;
+      canvas.addEventListener("mousemove", onMouseMove);
+      canvas.addEventListener("mouseup", onMouseUp);
+    });
   }
 }
 

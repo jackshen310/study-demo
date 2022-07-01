@@ -2,7 +2,10 @@
     display: flex
 }
 .basic .left {
-    width: 100px;
+    width: 200px;
+}
+.basic .left button {
+   margin: 2px;
 }
 .basic .right {
     width: auto;

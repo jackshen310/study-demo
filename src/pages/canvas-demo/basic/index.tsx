@@ -226,6 +226,12 @@ const CanvasBasic = () => {
           editor?.dragRect();
         },
         text: "拖拽矩形",
+      },
+      {
+        click: () => {
+          editor?.drawLineA();
+        },
+        text: "画线A",
       }
     );
 
