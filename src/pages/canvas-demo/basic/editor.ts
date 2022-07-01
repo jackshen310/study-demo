@@ -19,24 +19,6 @@ class Editor {
 
   init() {
     const { ctx } = this;
-    window.addEventListener("keydown", (e) => {
-      console.log(e);
-      let step = 2;
-      switch (e.key) {
-        case "ArrowUp":
-          ctx.translate(0, -step);
-          break;
-        case "ArrowDown":
-          ctx.translate(0, step);
-          break;
-        case "ArrowLeft":
-          ctx.translate(-step, 0);
-          break;
-        case "ArrowRight":
-          ctx.translate(step, 0);
-          break;
-      }
-    });
   }
 
   drawLine() {
@@ -312,6 +294,255 @@ class Editor {
 
       angle += 0.05;
     }, 500);
+  }
+  // 边界检测
+  checkBorder() {
+    const { ctx, tools, canvas } = this;
+    let radius = 20;
+    let ball = new Ball(100, 25, radius, tools.getRandomColor());
+    ball.fill(ctx);
+
+    // 边界检查
+    const check = (ball: Ball) => {
+      if (ball.y - radius < 0) {
+        ball.y = radius;
+      }
+      if (ball.y + radius > canvas.height) {
+        ball.y = canvas.height - radius;
+      }
+      if (ball.x - radius < 0) {
+        ball.x = radius;
+      }
+      if (ball.x + radius > canvas.width) {
+        ball.x = canvas.width - radius;
+      }
+    };
+    window.addEventListener("keydown", (e) => {
+      let step = 10;
+      this.clearRect();
+      switch (e.key) {
+        case "ArrowUp":
+          ball.y -= step;
+          check(ball);
+          ball.fill(ctx);
+          break;
+        case "ArrowDown":
+          ball.y += step;
+          check(ball);
+          ball.fill(ctx);
+          break;
+        case "ArrowLeft":
+          ball.x -= step;
+          check(ball);
+          ball.fill(ctx);
+          break;
+        case "ArrowRight":
+          ball.x += step;
+          check(ball);
+          ball.fill(ctx);
+          break;
+        default:
+          check(ball);
+          ball.fill(ctx);
+      }
+    });
+  }
+
+  // 边界反弹
+  checkBorder2() {
+    const { ctx, tools, canvas } = this;
+    let radius = 20;
+    let ball = new Ball(100, 25, radius, tools.getRandomColor());
+    ball.fill(ctx);
+
+    let vx = (Math.random() * 2 - 1) * 3;
+    let vy = (Math.random() * 2 - 1) * 3;
+    // 边界检查
+    const check = (ball: Ball) => {
+      if (ball.y - radius < 0) {
+        ball.y = radius;
+        vy = -vy;
+      }
+      if (ball.y + radius > canvas.height) {
+        ball.y = canvas.height - radius;
+        vy = -vy;
+      }
+      if (ball.x - radius < 0) {
+        ball.x = radius;
+        vx = -vx;
+      }
+      if (ball.x + radius > canvas.width) {
+        ball.x = canvas.width - radius;
+        vx = -vx;
+      }
+    };
+    setInterval(() => {
+      this.clearRect();
+
+      ball.x += vx;
+      ball.y += vy;
+
+      check(ball);
+
+      ball.fill(ctx);
+    }, 50);
+  }
+  // 碰撞检查
+  checkRect() {
+    const { ctx, tools, canvas } = this;
+    let radius = 20;
+    let ball = new Ball(
+      canvas.width / 2,
+      canvas.height / 2,
+      radius,
+      tools.getRandomColor()
+    );
+    ball.fill(ctx);
+
+    let rectA = ball.getRect();
+
+    setInterval(() => {
+      this.clearRect();
+
+      ball.fill(ctx);
+
+      let mouse = this.getMouse();
+      let ball2 = new Ball(mouse.x, mouse.y, radius, "blue");
+      ball2.fill(ctx);
+
+      let rectB = ball2.getRect();
+
+      if (tools.checkRect(rectA, rectB)) {
+        console.log("碰上了");
+      } else {
+        console.log("没碰上");
+      }
+    }, 50);
+  }
+
+  // 碰撞检查
+  checkCircle() {
+    const { ctx, tools, canvas } = this;
+    let radius = 20;
+    let ball = new Ball(
+      radius,
+      canvas.height / 2,
+      radius,
+      tools.getRandomColor()
+    );
+
+    let ball2 = new Ball(
+      canvas.width - radius,
+      canvas.height / 2,
+      radius,
+      tools.getRandomColor()
+    );
+    let vx = 5;
+    setInterval(() => {
+      this.clearRect();
+
+      ball.fill(ctx);
+      ball2.fill(ctx);
+
+      ball.x += vx;
+      ball2.x -= vx;
+
+      if (ball.x < radius) {
+        ball.x = radius;
+        vx = -vx;
+      }
+      if (ball2.x > canvas.width - radius) {
+        ball2.x = canvas.width - radius;
+        // vx = -vx;
+      }
+      if (tools.checkCircle(ball, ball2)) {
+        console.log("碰上了");
+        vx = -vx;
+      } else {
+        console.log("没碰上");
+      }
+    }, 50);
+  }
+
+  // 矩形捕获
+  captureRect() {
+    const { ctx, tools, canvas } = this;
+
+    let x = 100;
+    let y = 100;
+    let width = 200;
+    let height = 100;
+    ctx.fillStyle = tools.getRandomColor();
+    ctx.rect(x, y, width, height);
+    ctx.stroke();
+
+    canvas.addEventListener("mousemove", () => {
+      this.clearRect();
+
+      let mouse = this.getMouse();
+      if (
+        mouse.x > x &&
+        mouse.y > y &&
+        mouse.x < x + width &&
+        mouse.y < y + height
+      ) {
+        ctx.fillRect(x, y, width, height);
+      } else {
+        ctx.strokeRect(x, y, width, height);
+      }
+    });
+  }
+
+  // 拖拽矩形
+  dragRect() {
+    const { ctx, tools, canvas } = this;
+
+    let x = 100;
+    let y = 100;
+    let width = 200;
+    let height = 100;
+    ctx.fillStyle = tools.getRandomColor();
+    ctx.rect(x, y, width, height);
+    ctx.stroke();
+
+    let x1 = 0;
+    let y1 = 0;
+
+    const onMouseMove = () => {
+      this.clearRect();
+
+      let mouse = this.getMouse();
+      x = mouse.x - x1;
+      y = mouse.y - y1;
+      ctx.fillRect(x, y, width, height);
+    };
+    const onMouseUp = () => {
+      this.clearRect();
+      ctx.strokeRect(x, y, width, height);
+      canvas.removeEventListener("mousemove", onMouseMove);
+      canvas.removeEventListener("mouseup", onMouseUp);
+    };
+    canvas.addEventListener("mousedown", () => {
+      let mouse = this.getMouse();
+      x1 = mouse.x - x;
+      y1 = mouse.y - y;
+
+      // 鼠标在矩形内才允许拖拽
+      if (
+        mouse.x > x &&
+        mouse.y > y &&
+        mouse.x < x + width &&
+        mouse.y < y + height
+      ) {
+        canvas.addEventListener("mousemove", onMouseMove);
+        canvas.addEventListener("mouseup", onMouseUp);
+      }
+    });
+  }
+
+  // 缓动动画
+  easing() {
+    const { ctx, tools } = this;
   }
 }
 

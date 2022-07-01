@@ -2,6 +2,19 @@ export type Mouse = {
   x: number;
   y: number;
 };
+
+export type Rect = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+export type Circle = {
+  x: number;
+  y: number;
+  radius: number;
+};
 class Tools {
   static __mouse: Mouse;
   /**
@@ -90,6 +103,31 @@ class Tools {
 
     Tools.__mouse = mouse;
     return mouse;
+  }
+  /**
+   * 外接矩形判断法（碰撞检测）
+   * @param rectA
+   * @param rectB
+   * @returns
+   */
+  checkRect(rectA: Rect, rectB: Rect) {
+    return !(
+      rectA.x + rectA.width < rectB.x ||
+      rectB.x + rectB.width < rectA.x ||
+      rectA.y + rectA.height < rectB.y ||
+      rectB.y + rectB.height < rectA.y
+    );
+  }
+  //外接圆判定法（碰撞检测）
+  checkCircle(circleB: Circle, circleA: Circle) {
+    var dx = circleB.x - circleA.x;
+    var dy = circleB.y - circleA.y;
+    var distance = Math.sqrt(dx * dx + dy * dy);
+    if (distance < circleA.radius + circleB.radius) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }
 

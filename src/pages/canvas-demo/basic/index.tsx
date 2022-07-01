@@ -190,6 +190,42 @@ const CanvasBasic = () => {
           editor?.drawBall();
         },
         text: "小球运动",
+      },
+      {
+        click: () => {
+          editor?.checkBorder();
+        },
+        text: "边界检查",
+      },
+      {
+        click: () => {
+          editor?.checkBorder2();
+        },
+        text: "边界反弹",
+      },
+      {
+        click: () => {
+          editor?.checkRect();
+        },
+        text: "碰撞检测",
+      },
+      {
+        click: () => {
+          editor?.checkCircle();
+        },
+        text: "两球相撞",
+      },
+      {
+        click: () => {
+          editor?.captureRect();
+        },
+        text: "矩形捕获",
+      },
+      {
+        click: () => {
+          editor?.dragRect();
+        },
+        text: "拖拽矩形",
       }
     );
 
