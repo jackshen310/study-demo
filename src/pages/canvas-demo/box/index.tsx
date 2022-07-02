@@ -59,6 +59,18 @@ const CanvasBox = () => {
           editor?.drawStrokeRect();
         },
         text: "画矩形",
+      },
+      {
+        click: () => {
+          editor?.drawStrokeCircle();
+        },
+        text: "画圆形",
+      },
+      {
+        click: () => {
+          editor?.dragShape();
+        },
+        text: "拖拽",
       }
     );
 
