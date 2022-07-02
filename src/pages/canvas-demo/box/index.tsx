@@ -77,6 +77,12 @@ const CanvasBox = () => {
           editor?.drawStrokeTriangle();
         },
         text: "三角形",
+      },
+      {
+        click: () => {
+          editor?.drawStrokePolygon();
+        },
+        text: "多边形",
       }
     );
 

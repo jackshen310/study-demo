@@ -1,5 +1,5 @@
-import { Point } from "./types";
-export default class Circle {
+import { CircleData, Point, Shape } from "./types";
+export default class Circle<T extends CircleData> implements Shape<T> {
   x: number;
   y: number;
   radius: number;
@@ -9,10 +9,11 @@ export default class Circle {
     this.y = 0;
     this.radius = 0;
   }
-  circle(x: number, y: number, radius: number) {
-    this.x = x;
-    this.y = y;
-    this.radius = radius;
+
+  setData(data: T) {
+    this.x = data.x;
+    this.y = data.y;
+    this.radius = data.radius;
   }
 
   checkBorder(point: Point) {

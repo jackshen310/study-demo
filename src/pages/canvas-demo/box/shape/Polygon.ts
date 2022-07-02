@@ -1,5 +1,5 @@
 import { Point, Shape } from "./types";
-export default class Triangle<T extends Point> implements Shape<T> {
+export default class Polygon<T extends Point> implements Shape<T> {
   points: Point[];
   constructor() {
     this.points = [];
@@ -11,8 +11,21 @@ export default class Triangle<T extends Point> implements Shape<T> {
     points.push(point);
   }
 
-  isFinish() {
-    return this.points.length === 3;
+  isFinish(point: Point) {
+    const { points } = this;
+    if (points.length < 3) {
+      return false;
+    }
+    let first = points[0];
+
+    let dx = point.x - first.x;
+    let dy = point.y - first.y;
+    var distance = Math.sqrt(dx * dx + dy * dy);
+    if (distance < 6) {
+      return true;
+    } else {
+      return false;
+    }
   }
   // 向量叉乘 https://www.cnblogs.com/tuyang1129/p/9390376.html
   /**
@@ -26,18 +39,22 @@ export default class Triangle<T extends Point> implements Shape<T> {
     a * b = x1*y2 - y1*x2
    */
   checkBorder(point: Point) {
-    let a = this.points[0];
-    let b = this.points[1];
-    let c = this.points[2];
+    const { points } = this;
 
-    if (
-      this.getCross(a, b, point) * this.getCross(a, b, c) > 0 &&
-      this.getCross(a, c, point) * this.getCross(a, c, b) > 0 &&
-      this.getCross(b, c, point) * this.getCross(b, c, a) > 0
-    ) {
-      return true;
+    for (let i = 0; i < points.length; i++) {
+      for (let j = i + 1; j < points.length; j++) {
+        for (let k = 0; k < points.length && k !== i && k !== j; k++) {
+          if (
+            this.getCross(points[i], points[j], point) *
+              this.getCross(points[i], points[j], points[k]) <
+            0
+          ) {
+            return false;
+          }
+        }
+      }
     }
-    return false;
+    return true;
   }
 
   getCross(a: Point, b: Point, p: Point) {

@@ -1,5 +1,5 @@
-import { Point } from "./types";
-export default class Rect {
+import { Point, RectData, Shape } from "./types";
+export default class Rect<T extends RectData> implements Shape<T> {
   x: number;
   y: number;
   w: number;
@@ -10,11 +10,11 @@ export default class Rect {
     this.w = 0;
     this.h = 0;
   }
-  rect(x: number, y: number, w: number, h: number) {
-    this.x = x;
-    this.y = y;
-    this.w = w;
-    this.h = h;
+  setData(data: RectData) {
+    this.x = data.x;
+    this.y = data.y;
+    this.w = data.w;
+    this.h = data.h;
   }
 
   checkBorder(point: Point) {

@@ -2,22 +2,25 @@ import Tools from "../basic/tools";
 import avatar from "../images/avatar.jpg";
 import Circle from "./shape/Circle";
 import Line from "./shape/Line";
+import Polygon from "./shape/Polygon";
 import Rect from "./shape/Rect";
 import Triangle from "./shape/Triangle";
+import {
+  CircleData,
+  LineData,
+  Point,
+  RectData,
+  Shape,
+  ShapeData,
+} from "./shape/types";
 
-const R = Math.PI / 180;
-
-type Shape = {
-  type: "rect" | "line" | "circle" | "triangle";
-  prop: any;
-};
 class Editor {
   canvas: HTMLCanvasElement;
   canvasView: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   ctxView: CanvasRenderingContext2D;
   tools: Tools;
-  shapes: Shape[];
+  shapes: Shape<any>[];
 
   constructor(canvas: HTMLCanvasElement, canvasView: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -68,23 +71,20 @@ class Editor {
     const { ctxView, canvasView } = this;
     let sx: number, sy: number, dx, dy;
     let mouse = this.getMouse();
-    let shape: Line;
+    let shape: Line<LineData>;
 
     const onMouseMove = () => {
       this.clearRect();
 
       dx = mouse.x;
       dy = mouse.y;
-      shape.line(sx, sy, dx, dy);
+      shape.setData({ x: sx, y: sy, x2: dx, y2: dy });
       shape.stroke(ctxView);
     };
 
     const onMouseUp = () => {
       // 将视图层copy到缓冲层
-      this.shapes.push({
-        type: "line",
-        prop: shape,
-      });
+      this.shapes.push(shape);
       this.drawShapes();
 
       canvasView.removeEventListener("mousemove", onMouseMove);
@@ -107,7 +107,7 @@ class Editor {
     const { ctxView, canvasView } = this;
     let sx: number, sy: number, dx, dy;
     let mouse = this.getMouse();
-    let shape: Rect;
+    let shape: Rect<RectData>;
 
     const onMouseMove = () => {
       this.clearRect();
@@ -115,21 +115,18 @@ class Editor {
       dx = mouse.x;
       dy = mouse.y;
 
-      shape.rect(
-        Math.min(sx, dx),
-        Math.min(sy, dy),
-        Math.abs(dx - sx),
-        Math.abs(dy - sy)
-      );
+      shape.setData({
+        x: Math.min(sx, dx),
+        y: Math.min(sy, dy),
+        w: Math.abs(dx - sx),
+        h: Math.abs(dy - sy),
+      });
       shape.stroke(ctxView);
     };
 
     const onMouseUp = () => {
       // 将视图层copy到缓冲层
-      this.shapes.push({
-        type: "rect",
-        prop: shape,
-      });
+      this.shapes.push(shape);
       this.drawShapes();
 
       canvasView.removeEventListener("mousemove", onMouseMove);
@@ -153,7 +150,7 @@ class Editor {
     const { ctx, ctxView, canvasView } = this;
     let sx: number, sy: number, dx, dy;
     let mouse = this.getMouse();
-    let shape: Circle;
+    let shape: Circle<CircleData>;
 
     const onMouseMove = () => {
       this.clearRect();
@@ -174,16 +171,13 @@ class Editor {
       let x = radius * Math.cos(angle) + sx;
       let y = radius * Math.sin(angle) + sy;
 
-      shape.circle(x, y, radius);
+      shape.setData({ x, y, radius });
       shape.stroke(ctxView);
     };
 
     const onMouseUp = () => {
       // 将视图层copy到缓冲层
-      this.shapes.push({
-        type: "circle",
-        prop: shape,
-      });
+      this.shapes.push(shape);
       this.drawShapes();
 
       canvasView.removeEventListener("mousemove", onMouseMove);
@@ -204,22 +198,13 @@ class Editor {
     const { shapes, ctx, canvas } = this;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     shapes.forEach((shape) => {
-      const { type, prop } = shape;
-      if (type === "rect") {
-        prop.stroke(ctx);
-      } else if (type === "circle") {
-        prop.stroke(ctx);
-      } else if (type === "line") {
-        prop.stroke(ctx);
-      } else if (type === "triangle") {
-        prop.stroke(ctx, true);
-      }
+      shape.stroke(ctx, true);
     });
   }
 
   dragShape() {
     const { ctxView, canvasView, shapes } = this;
-    let curShape: Shape;
+    let curShape: Shape<any>;
     let x1 = 0;
     let y1 = 0;
     let mouse = this.getMouse();
@@ -227,45 +212,19 @@ class Editor {
     const onMouseMove = () => {
       this.clearRect();
 
-      const { type, prop } = curShape;
-      if (type === "rect") {
-        let d = mouse.x - x1;
-        let f = mouse.y - y1;
+      let d = mouse.x - x1;
+      let f = mouse.y - y1;
 
-        ctxView.save();
-        ctxView.setTransform(1, 0, 0, 1, d, f);
-        prop.fill(ctxView, "green");
-        ctxView.restore();
-      } else if (type === "circle") {
-        let d = mouse.x - x1;
-        let f = mouse.y - y1;
-
-        ctxView.save();
-        ctxView.setTransform(1, 0, 0, 1, d, f);
-        prop.fill(ctxView, "green");
-        ctxView.restore();
-      } else if (type === "line") {
-        let d = mouse.x - x1;
-        let f = mouse.y - y1;
-
-        ctxView.save();
-        ctxView.setTransform(1, 0, 0, 1, d, f);
-        prop.fill(ctxView, "green");
-        ctxView.restore();
-      } else if (type === "triangle") {
-        let d = mouse.x - x1;
-        let f = mouse.y - y1;
-        ctxView.save();
-        ctxView.setTransform(1, 0, 0, 1, d, f);
-        prop.fill(ctxView, "green");
-        ctxView.restore();
-      }
+      ctxView.save();
+      ctxView.setTransform(1, 0, 0, 1, d, f);
+      curShape.fill(ctxView, "green");
+      ctxView.restore();
     };
 
     const onMouseUp = () => {
       this.clearRect();
       // 将视图层copy到缓冲层
-      curShape.prop.setTranslate(mouse.x - x1, mouse.y - y1);
+      curShape.setTranslate(mouse.x - x1, mouse.y - y1);
       this.shapes.push(curShape);
       this.drawShapes();
 
@@ -279,35 +238,12 @@ class Editor {
 
       let flag = false;
       for (let i = shapes.length - 1; i >= 0; i--) {
-        let { type, prop } = shapes[i];
-        if (type === "rect") {
-          if (prop.checkBorder(mouse)) {
-            curShape = shapes[i];
-            shapes.splice(i, 1);
-            flag = true;
-            break;
-          }
-        } else if (type === "circle") {
-          if (prop.checkBorder(mouse)) {
-            curShape = shapes[i];
-            shapes.splice(i, 1);
-            flag = true;
-            break;
-          }
-        } else if (type === "triangle") {
-          if (prop.checkBorder(mouse)) {
-            curShape = shapes[i];
-            shapes.splice(i, 1);
-            flag = true;
-            break;
-          }
-        } else if (type === "line") {
-          if (prop.checkBorder(mouse)) {
-            curShape = shapes[i];
-            shapes.splice(i, 1);
-            flag = true;
-            break;
-          }
+        let shape = shapes[i];
+        if (shape.checkBorder(mouse)) {
+          curShape = shapes[i];
+          shapes.splice(i, 1);
+          flag = true;
+          break;
         }
       }
       if (flag) {
@@ -328,7 +264,7 @@ class Editor {
     let sx: number, sy: number, dx: number, dy: number;
     let mouse = this.getMouse();
     let isFirstPoint = true;
-    let shape: Triangle;
+    let shape: Triangle<Point>;
 
     const onMouseMove = () => {
       this.clearRect();
@@ -342,13 +278,10 @@ class Editor {
     const onMouseUp = () => {
       this.clearRect();
 
-      shape.lineTo({ x: dx, y: dy });
+      shape.setData({ x: dx, y: dy });
       if (shape.isFinish()) {
         // 将视图层copy到缓冲层
-        this.shapes.push({
-          type: "triangle",
-          prop: shape,
-        });
+        this.shapes.push(shape);
         this.drawShapes();
 
         isFirstPoint = true;
@@ -370,7 +303,62 @@ class Editor {
 
         // 第一个个点
         shape = new Triangle();
-        shape.moveTo({ x: sx, y: sy });
+        shape.setData({ x: sx, y: sy });
+
+        isFirstPoint = false;
+      }
+
+      canvasView.addEventListener("mousemove", onMouseMove);
+      canvasView.addEventListener("mouseup", onMouseUp);
+    };
+  }
+
+  // 画多边形
+  drawStrokePolygon() {
+    const { ctx, canvasView } = this;
+    let sx: number, sy: number, dx: number, dy: number;
+    let mouse = this.getMouse();
+    let isFirstPoint = true;
+    let shape: Polygon<Point>;
+
+    const onMouseMove = () => {
+      this.clearRect();
+
+      dx = mouse.x;
+      dy = mouse.y;
+
+      this.strokeLine(sx, sy, dx, dy);
+    };
+
+    const onMouseUp = () => {
+      this.clearRect();
+
+      if (shape.isFinish(mouse)) {
+        // 将视图层copy到缓冲层
+        this.shapes.push(shape);
+        this.drawShapes();
+
+        isFirstPoint = true;
+      } else {
+        shape.setData({ x: dx, y: dy });
+        shape.stroke(ctx);
+        sx = dx;
+        sy = dy;
+      }
+
+      canvasView.removeEventListener("mousemove", onMouseMove);
+      canvasView.removeEventListener("mouseup", onMouseUp);
+    };
+
+    canvasView.onmousedown = () => {
+      if (isFirstPoint) {
+        // 记住鼠标位置
+        sx = mouse.x;
+        sy = mouse.y;
+
+        // 第一个个点
+        shape = new Polygon();
+        shape.setData({ x: sx, y: sy });
 
         isFirstPoint = false;
       }

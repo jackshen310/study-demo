@@ -1,5 +1,5 @@
-import { Point } from "./types";
-export default class Line {
+import { Point, LineData, Shape } from "./types";
+export default class Line<T extends LineData> implements Shape<T> {
   x: number;
   y: number;
   x2: number;
@@ -10,12 +10,13 @@ export default class Line {
     this.x2 = 0;
     this.y2 = 0;
   }
-  line(x: number, y: number, x2: number, y2: number) {
-    this.x = x;
-    this.y = y;
-    this.x2 = x2;
-    this.y2 = y2;
+  setData(data: LineData) {
+    this.x = data.x;
+    this.y = data.y;
+    this.x2 = data.x2;
+    this.y2 = data.y2;
   }
+
   // TODO 这个以后再说
   checkBorder(point: Point) {
     const { x, y, x2, y2 } = this;
