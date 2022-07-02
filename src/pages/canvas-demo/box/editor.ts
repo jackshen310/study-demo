@@ -1,10 +1,11 @@
 import Tools from "../basic/tools";
 import avatar from "../images/avatar.jpg";
+import Triangle from "./shape/Triangle";
 
 const R = Math.PI / 180;
 
 type Shape = {
-  type: "rect" | "line" | "circle";
+  type: "rect" | "line" | "circle" | "triangle";
   prop: any;
 };
 class Editor {
@@ -238,6 +239,8 @@ class Editor {
         ctx.lineTo(prop.dx, prop.dy);
         ctx.stroke();
         ctx.restore();
+      } else if (type === "triangle") {
+        prop.draw(ctx, true);
       }
     });
   }
@@ -294,10 +297,12 @@ class Editor {
         prop.dx = x2 + prop.sx;
         prop.dy = y2 + prop.sy;
         this.strokeLine(prop.sx, prop.sy, prop.dx, prop.dy);
+      } else if (type === "triangle") {
       }
     };
 
     const onMouseUp = () => {
+      this.clearRect();
       // 将视图层copy到缓冲层
       this.shapes.push(curShape);
       this.drawShapes();
@@ -339,6 +344,64 @@ class Editor {
         canvasView.addEventListener("mousemove", onMouseMove);
         canvasView.addEventListener("mouseup", onMouseUp);
       }
+    };
+  }
+
+  // 画三角形
+  drawStrokeTriangle() {
+    const { ctx, canvasView } = this;
+    let sx: number, sy: number, dx: number, dy: number;
+    let mouse = this.getMouse();
+    let isFirstPoint = true;
+    let shape: Triangle;
+
+    const onMouseMove = () => {
+      this.clearRect();
+
+      dx = mouse.x;
+      dy = mouse.y;
+
+      this.strokeLine(sx, sy, dx, dy);
+    };
+
+    const onMouseUp = () => {
+      this.clearRect();
+
+      shape.lineTo({ x: dx, y: dy });
+      if (shape.isFinish()) {
+        // 将视图层copy到缓冲层
+        this.shapes.push({
+          type: "triangle",
+          prop: shape,
+        });
+        this.drawShapes();
+
+        isFirstPoint = true;
+      } else {
+        shape.stroke(ctx);
+        sx = dx;
+        sy = dy;
+      }
+
+      canvasView.removeEventListener("mousemove", onMouseMove);
+      canvasView.removeEventListener("mouseup", onMouseUp);
+    };
+
+    canvasView.onmousedown = () => {
+      if (isFirstPoint) {
+        // 记住鼠标位置
+        sx = mouse.x;
+        sy = mouse.y;
+
+        // 第一个个点
+        shape = new Triangle();
+        shape.moveTo({ x: sx, y: sy });
+
+        isFirstPoint = false;
+      }
+
+      canvasView.addEventListener("mousemove", onMouseMove);
+      canvasView.addEventListener("mouseup", onMouseUp);
     };
   }
 }

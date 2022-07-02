@@ -71,6 +71,12 @@ const CanvasBox = () => {
           editor?.dragShape();
         },
         text: "拖拽",
+      },
+      {
+        click: () => {
+          editor?.drawStrokeTriangle();
+        },
+        text: "三角形",
       }
     );
 
