@@ -1,5 +1,8 @@
 import Tools from "../basic/tools";
 import avatar from "../images/avatar.jpg";
+import Circle from "./shape/Circle";
+import Line from "./shape/Line";
+import Rect from "./shape/Rect";
 import Triangle from "./shape/Triangle";
 
 const R = Math.PI / 180;
@@ -60,50 +63,27 @@ class Editor {
     ctxView.stroke();
     ctxView.restore();
   }
-
-  // 画描边矩形
-  strokeRect(x: number, y: number, w: number, h: number) {
-    const { ctxView } = this;
-    ctxView.strokeRect(x, y, w, h);
-  }
-
-  // 画描边圆
-  strokeCircle(x: number, y: number, radius: number) {
-    const { ctxView } = this;
-
-    ctxView.save();
-    ctxView.beginPath();
-    ctxView.arc(x, y, radius, 0, 360 * R);
-    ctxView.stroke();
-    ctxView.restore();
-
-    return { x, y, radius };
-  }
   // 画线
   drawLine() {
-    const { ctx, canvasView } = this;
+    const { ctxView, canvasView } = this;
     let sx: number, sy: number, dx, dy;
     let mouse = this.getMouse();
+    let shape: Line;
 
     const onMouseMove = () => {
       this.clearRect();
 
       dx = mouse.x;
       dy = mouse.y;
-
-      this.strokeLine(sx, sy, dx, dy);
+      shape.line(sx, sy, dx, dy);
+      shape.stroke(ctxView);
     };
 
     const onMouseUp = () => {
       // 将视图层copy到缓冲层
       this.shapes.push({
         type: "line",
-        prop: {
-          sx,
-          sy,
-          dx: mouse.x,
-          dy: mouse.y,
-        },
+        prop: shape,
       });
       this.drawShapes();
 
@@ -115,6 +95,7 @@ class Editor {
       // 记住鼠标位置
       sx = mouse.x;
       sy = mouse.y;
+      shape = new Line();
 
       canvasView.addEventListener("mousemove", onMouseMove);
       canvasView.addEventListener("mouseup", onMouseUp);
@@ -123,9 +104,10 @@ class Editor {
 
   // 画矩形
   drawStrokeRect() {
-    const { ctx, canvasView } = this;
+    const { ctxView, canvasView } = this;
     let sx: number, sy: number, dx, dy;
     let mouse = this.getMouse();
+    let shape: Rect;
 
     const onMouseMove = () => {
       this.clearRect();
@@ -133,24 +115,20 @@ class Editor {
       dx = mouse.x;
       dy = mouse.y;
 
-      this.strokeRect(
+      shape.rect(
         Math.min(sx, dx),
         Math.min(sy, dy),
         Math.abs(dx - sx),
         Math.abs(dy - sy)
       );
+      shape.stroke(ctxView);
     };
 
     const onMouseUp = () => {
       // 将视图层copy到缓冲层
       this.shapes.push({
         type: "rect",
-        prop: {
-          x: Math.min(sx, mouse.x),
-          y: Math.min(sy, mouse.y),
-          w: Math.abs(mouse.x - sx),
-          h: Math.abs(mouse.y - sy),
-        },
+        prop: shape,
       });
       this.drawShapes();
 
@@ -163,6 +141,8 @@ class Editor {
       sx = mouse.x;
       sy = mouse.y;
 
+      shape = new Rect();
+
       canvasView.addEventListener("mousemove", onMouseMove);
       canvasView.addEventListener("mouseup", onMouseUp);
     };
@@ -170,10 +150,10 @@ class Editor {
 
   // 画圆
   drawStrokeCircle() {
-    const { ctx, canvasView } = this;
+    const { ctx, ctxView, canvasView } = this;
     let sx: number, sy: number, dx, dy;
     let mouse = this.getMouse();
-    let prop: any = null;
+    let shape: Circle;
 
     const onMouseMove = () => {
       this.clearRect();
@@ -194,14 +174,15 @@ class Editor {
       let x = radius * Math.cos(angle) + sx;
       let y = radius * Math.sin(angle) + sy;
 
-      prop = this.strokeCircle(x, y, radius);
+      shape.circle(x, y, radius);
+      shape.stroke(ctxView);
     };
 
     const onMouseUp = () => {
       // 将视图层copy到缓冲层
       this.shapes.push({
         type: "circle",
-        prop,
+        prop: shape,
       });
       this.drawShapes();
 
@@ -211,9 +192,9 @@ class Editor {
 
     canvasView.onmousedown = () => {
       // 记住鼠标位置
-      let mouse = this.getMouse();
       sx = mouse.x;
       sy = mouse.y;
+      shape = new Circle();
 
       canvasView.addEventListener("mousemove", onMouseMove);
       canvasView.addEventListener("mouseup", onMouseUp);
@@ -225,85 +206,66 @@ class Editor {
     shapes.forEach((shape) => {
       const { type, prop } = shape;
       if (type === "rect") {
-        ctx.strokeRect(prop.x, prop.y, prop.w, prop.h);
+        prop.stroke(ctx);
       } else if (type === "circle") {
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(prop.x, prop.y, prop.radius, 0, 360 * R);
-        ctx.stroke();
-        ctx.restore();
+        prop.stroke(ctx);
       } else if (type === "line") {
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(prop.sx, prop.sy);
-        ctx.lineTo(prop.dx, prop.dy);
-        ctx.stroke();
-        ctx.restore();
+        prop.stroke(ctx);
       } else if (type === "triangle") {
-        prop.draw(ctx, true);
+        prop.stroke(ctx, true);
       }
     });
   }
 
-  checkRect(x: number, y: number, w: number, h: number) {
-    let mouse = this.getMouse();
-    return mouse.x > x && mouse.x < x + w && mouse.y > y && mouse.y < y + h;
-  }
-
-  checkArc(x: number, y: number, radius: number) {
-    let mouse = this.getMouse();
-    let dx = mouse.x - x;
-    let dy = mouse.y - y;
-    var distance = Math.sqrt(dx * dx + dy * dy);
-    if (distance < radius) {
-      return true;
-    } else {
-      return false;
-    }
-  }
   dragShape() {
-    const { ctx, ctxView, canvasView, shapes } = this;
-    let sx: number, sy: number, dx, dy;
+    const { ctxView, canvasView, shapes } = this;
     let curShape: Shape;
     let x1 = 0;
     let y1 = 0;
+    let mouse = this.getMouse();
 
     const onMouseMove = () => {
       this.clearRect();
-      let mouse = this.getMouse();
 
       const { type, prop } = curShape;
       if (type === "rect") {
+        let d = mouse.x - x1;
+        let f = mouse.y - y1;
+
         ctxView.save();
-        ctxView.fillStyle = "green";
-        prop.x = mouse.x - x1;
-        prop.y = mouse.y - y1;
-        ctxView.fillRect(prop.x, prop.y, prop.w, prop.h);
+        ctxView.setTransform(1, 0, 0, 1, d, f);
+        prop.fill(ctxView, "green");
         ctxView.restore();
       } else if (type === "circle") {
+        let d = mouse.x - x1;
+        let f = mouse.y - y1;
+
         ctxView.save();
-        ctxView.beginPath();
-        ctxView.fillStyle = "red";
-        prop.x = mouse.x - x1;
-        prop.y = mouse.y - y1;
-        ctxView.arc(prop.x, prop.y, prop.radius, 0, 360 * R);
-        ctxView.fill();
+        ctxView.setTransform(1, 0, 0, 1, d, f);
+        prop.fill(ctxView, "green");
         ctxView.restore();
       } else if (type === "line") {
-        let x2 = prop.dx - prop.sx;
-        let y2 = (prop.dy = prop.sy);
-        prop.sx = mouse.x - x1;
-        prop.sy = mouse.y - y1;
-        prop.dx = x2 + prop.sx;
-        prop.dy = y2 + prop.sy;
-        this.strokeLine(prop.sx, prop.sy, prop.dx, prop.dy);
+        let d = mouse.x - x1;
+        let f = mouse.y - y1;
+
+        ctxView.save();
+        ctxView.setTransform(1, 0, 0, 1, d, f);
+        prop.fill(ctxView, "green");
+        ctxView.restore();
       } else if (type === "triangle") {
+        let d = mouse.x - x1;
+        let f = mouse.y - y1;
+        ctxView.save();
+        ctxView.setTransform(1, 0, 0, 1, d, f);
+        prop.fill(ctxView, "green");
+        ctxView.restore();
       }
     };
 
     const onMouseUp = () => {
       this.clearRect();
       // 将视图层copy到缓冲层
+      curShape.prop.setTranslate(mouse.x - x1, mouse.y - y1);
       this.shapes.push(curShape);
       this.drawShapes();
 
@@ -319,26 +281,39 @@ class Editor {
       for (let i = shapes.length - 1; i >= 0; i--) {
         let { type, prop } = shapes[i];
         if (type === "rect") {
-          if (this.checkRect(prop.x, prop.y, prop.w, prop.h)) {
+          if (prop.checkBorder(mouse)) {
             curShape = shapes[i];
             shapes.splice(i, 1);
             flag = true;
             break;
           }
         } else if (type === "circle") {
-          if (this.checkArc(prop.x, prop.y, prop.radius)) {
+          if (prop.checkBorder(mouse)) {
+            curShape = shapes[i];
+            shapes.splice(i, 1);
+            flag = true;
+            break;
+          }
+        } else if (type === "triangle") {
+          if (prop.checkBorder(mouse)) {
             curShape = shapes[i];
             shapes.splice(i, 1);
             flag = true;
             break;
           }
         } else if (type === "line") {
-          // TODO
+          if (prop.checkBorder(mouse)) {
+            curShape = shapes[i];
+            shapes.splice(i, 1);
+            flag = true;
+            break;
+          }
         }
       }
       if (flag) {
-        x1 = mouse.x - curShape.prop.x;
-        y1 = mouse.y - curShape.prop.y;
+        x1 = mouse.x;
+        y1 = mouse.y;
+
         this.drawShapes();
 
         canvasView.addEventListener("mousemove", onMouseMove);
