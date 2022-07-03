@@ -72,11 +72,13 @@ class Tools {
     if (Tools.__mouse) {
       return Tools.__mouse;
     }
+    debugger;
     const mouse = { x: 0, y: 0 };
 
     element.addEventListener(
       "mousemove",
       function (e) {
+        debugger;
         let x, y;
         e = e || window.event;
         if (e.pageX || e.pageY) {
