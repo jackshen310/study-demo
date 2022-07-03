@@ -83,6 +83,18 @@ const CanvasBox = () => {
           editor?.drawStrokePolygon();
         },
         text: "多边形",
+      },
+      {
+        click: () => {
+          editor?.drawStrokeEllipse();
+        },
+        text: "椭圆",
+      },
+      {
+        click: () => {
+          editor?.drawStrokeText();
+        },
+        text: "文本",
       }
     );
 

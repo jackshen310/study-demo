@@ -1,18 +1,14 @@
 import Tools from "../basic/tools";
 import avatar from "../images/avatar.jpg";
 import Circle from "./shape/Circle";
+import Ellipse from "./shape/Ellipse";
 import Line from "./shape/Line";
 import Polygon from "./shape/Polygon";
 import Rect from "./shape/Rect";
 import Triangle from "./shape/Triangle";
-import {
-  CircleData,
-  LineData,
-  Point,
-  RectData,
-  Shape,
-  ShapeData,
-} from "./shape/types";
+import Text from "./shape/Text";
+import { EllipseData, TextData } from "./shape/types";
+import { CircleData, LineData, Point, RectData, Shape } from "./shape/types";
 
 class Editor {
   canvas: HTMLCanvasElement;
@@ -194,6 +190,57 @@ class Editor {
       canvasView.addEventListener("mouseup", onMouseUp);
     };
   }
+
+  // 画椭圆
+  drawStrokeEllipse() {
+    const { ctx, ctxView, canvasView } = this;
+    let sx: number, sy: number, dx, dy;
+    let mouse = this.getMouse();
+    let shape: Ellipse<EllipseData>;
+
+    const onMouseMove = () => {
+      this.clearRect();
+
+      dx = mouse.x;
+      dy = mouse.y;
+
+      // 计算夹角
+      let angle = Math.atan2(dy - sy, dx - sx);
+
+      // 计算半径
+      let radiusX =
+        Math.sqrt(
+          Math.pow(Math.abs(dx - sx), 2) + Math.pow(Math.abs(dy - sy), 2)
+        ) / 2;
+
+      // 计算x，y轴
+      let x = radiusX * Math.cos(angle) + sx;
+      let y = radiusX * Math.sin(angle) + sy;
+      let radiusY = radiusX * 0.6; // 这里假设椭圆短边半径是长边半径的3/5
+
+      shape.setData({ x, y, radiusX, radiusY });
+      shape.stroke(ctxView);
+    };
+
+    const onMouseUp = () => {
+      // 将视图层copy到缓冲层
+      this.shapes.push(shape);
+      this.drawShapes();
+
+      canvasView.removeEventListener("mousemove", onMouseMove);
+      canvasView.removeEventListener("mouseup", onMouseUp);
+    };
+
+    canvasView.onmousedown = () => {
+      // 记住鼠标位置
+      sx = mouse.x;
+      sy = mouse.y;
+      shape = new Ellipse();
+
+      canvasView.addEventListener("mousemove", onMouseMove);
+      canvasView.addEventListener("mouseup", onMouseUp);
+    };
+  }
   drawShapes() {
     const { shapes, ctx, canvas } = this;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -365,6 +412,22 @@ class Editor {
 
       canvasView.addEventListener("mousemove", onMouseMove);
       canvasView.addEventListener("mouseup", onMouseUp);
+    };
+  }
+
+  // 画文本
+  drawStrokeText() {
+    const { canvasView } = this;
+    let mouse = this.getMouse();
+    let shape: Text<TextData>;
+
+    canvasView.onmousedown = () => {
+      shape = new Text();
+      shape.setData({ ...mouse, text: "hello world" });
+
+      // 将视图层copy到缓冲层
+      this.shapes.push(shape);
+      this.drawShapes();
     };
   }
 }

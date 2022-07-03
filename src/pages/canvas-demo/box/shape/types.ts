@@ -9,6 +9,13 @@ export type CircleData = {
   radius: number;
 };
 
+export type EllipseData = {
+  x: number;
+  y: number;
+  radiusX: number;
+  radiusY: number;
+};
+
 export type LineData = {
   x: number;
   y: number;
@@ -21,6 +28,12 @@ export type RectData = {
   y: number;
   w: number;
   h: number;
+};
+
+export type TextData = {
+  x: number;
+  y: number;
+  text: string;
 };
 
 export type ShapeData = CircleData | LineData | Point | RectData;
