@@ -18,7 +18,7 @@ const CanvasFabric = () => {
     const onMouseMove = () => {
       setMouse({ ...editor?.getMouse() });
     };
-    const canvas = document.getElementsByClassName(".upper-canvas")[0];
+    const canvas = document;
     if (!canvas) {
       return;
     }
@@ -91,6 +91,36 @@ const CanvasFabric = () => {
           editor?.drawIText();
         },
         text: "可编辑文本",
+      },
+      {
+        click: () => {
+          editor?.drawTextbox();
+        },
+        text: "文本框",
+      },
+      {
+        click: () => {
+          editor?.drawGroup();
+        },
+        text: "分组",
+      },
+      {
+        click: () => {
+          editor?.drawAnimate();
+        },
+        text: "动画",
+      },
+      {
+        click: () => {
+          editor?.drawZoom();
+        },
+        text: "缩放",
+      },
+      {
+        click: () => {
+          editor?.drawFromJson();
+        },
+        text: "反序列化",
       }
     );
 
