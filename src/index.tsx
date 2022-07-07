@@ -8,6 +8,7 @@ import CanvasGrid from "./pages/canvas-demo/grid";
 import CanvasBasic from "./pages/canvas-demo/basic";
 import CanvasBox from "./pages/canvas-demo/box";
 import CanvasFabric from "./pages/canvas-demo/fabric/index";
+import CanvasApplication from "./pages/canvas-demo/application/index";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -20,6 +21,7 @@ root.render(
       <Route path="canvas-box" element={<CanvasBox />} />
       <Route path="canvas-grid" element={<CanvasGrid />} />
       <Route path="canvas-fabricjs" element={<CanvasFabric />} />
+      <Route path="canvas-application" element={<CanvasApplication />} />
     </Routes>
   </BrowserRouter>
 );

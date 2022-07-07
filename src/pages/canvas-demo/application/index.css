@@ -1,0 +1,18 @@
+.box {
+    display: flex
+}
+.box .left {
+    width: 200px;
+}
+.box .left button {
+   margin: 2px;
+}
+.box .right {
+    width: auto;
+    position: relative;
+    width: 800px;
+    height: 600px;
+}
+.box .right p {
+   text-align: center;
+}
