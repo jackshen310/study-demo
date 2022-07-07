@@ -32,12 +32,20 @@ const CanvasApplication = () => {
 
   const renderBtn = () => {
     let btns: { click: MouseEventHandler; text: string }[] = [];
-    btns.push({
-      click: () => {
-        editor?.stop();
+    btns.push(
+      {
+        click: () => {
+          editor?.strokeGrid();
+        },
+        text: "网格线",
       },
-      text: "停止",
-    });
+      {
+        click: () => {
+          editor?.drawColor();
+        },
+        text: "调色板",
+      }
+    );
     return btns.map((item, index) => (
       <button key={index} onClick={item.click}>
         {item.text}
