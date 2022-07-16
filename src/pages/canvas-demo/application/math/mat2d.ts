@@ -2,6 +2,9 @@ import vec2 from "./vec2";
 import Math2D from "./math2d";
 
 const PiBy180 = Math.PI / 180;
+/**
+ * 矩阵
+ */
 export default class mat2d {
   public values: Float32Array;
 
@@ -55,7 +58,12 @@ export default class mat2d {
     }
     return angle / PiBy180;
   }
-
+  /**
+   * 矩阵拷贝
+   * @param src
+   * @param result
+   * @returns
+   */
   public static copy(src: mat2d, result: mat2d | null = null): mat2d {
     if (result === null) result = new mat2d();
     result.values[0] = src.values[0];
@@ -67,7 +75,7 @@ export default class mat2d {
     return result;
   }
   /**
-   * 向量相乘
+   * 矩阵相乘
    * @param left
    * @param right
    * @param result
@@ -108,7 +116,7 @@ export default class mat2d {
     return mat.values[0] * mat.values[3] - mat.values[2] * mat.values[1];
   }
   /**
-   * 取反
+   * 逆矩阵
    * @param src
    * @param result
    * @returns

@@ -11,7 +11,9 @@ export enum EInputEventType {
   KEYDOWN,
   KEYPRESS,
 }
-
+/**
+ * 键盘事件
+ */
 export class CanvasInputEvent {
   public altKey: boolean;
   public ctrlKey: boolean;
@@ -29,11 +31,14 @@ export class CanvasInputEvent {
     this.type = type;
   }
 }
-
+/**
+ * 鼠标事件
+ */
 export class CanvasMouseEvent extends CanvasInputEvent {
   public button: number;
+  // 基于画布的坐标
   public canvasPosition: Vec2;
-
+  // 基于浏览器视窗的坐标
   public localPosition: Vec2;
   public hasLocalPosition: boolean;
 

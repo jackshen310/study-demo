@@ -314,4 +314,8 @@ export class Canvas2DApplication extends Application {
     super(canvas);
     this.context2D = this.canvas.getContext("2d");
   }
+  public clearRect() {
+    const { canvas, context2D } = this;
+    context2D?.clearRect(0, 0, canvas.width, canvas.height);
+  }
 }

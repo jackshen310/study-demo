@@ -1,5 +1,6 @@
 import { Canvas2DApplication } from "./application";
 import { CanvasKeyBoardEvent, CanvasMouseEvent } from "./event";
+import Math2D from "./math/math2d";
 import Vec2 from "./math/vec2";
 import { Colors } from "./util";
 
@@ -18,12 +19,7 @@ export default class Editor extends Canvas2DApplication {
   getMouse() {
     return this.mouse;
   }
-
-  clearRect() {
-    const { canvas, context2D } = this;
-    context2D?.clearRect(0, 0, canvas.width, canvas.height);
-  }
-
+  // 绘制网格线
   public strokeGrid(color: string = "grey", interval: number = 10): void {
     if (this.context2D !== null) {
       this.context2D.save();
@@ -49,7 +45,45 @@ export default class Editor extends Canvas2DApplication {
     }
   }
 
-  public strokeLine(x0: number, y0: number, x1: number, y1: number): void {
+  // 绘制调色板
+  public drawColor() {
+    const colorCanvas = this.getColorCanvas();
+    this.context2D?.drawImage(colorCanvas, 0, 0);
+  }
+  // 绘制中心点坐标系
+  public drawCanvasCoordCenter(): void {
+    if (this.context2D === null) {
+      return;
+    }
+    let halfWidth: number = this.canvas.width * 0.5;
+    let halfHeight: number = this.canvas.height * 0.5;
+
+    this.context2D.save();
+    this.context2D.lineWidth = 2;
+    this.context2D.strokeStyle = "rgba( 255 , 0 , 0 , 0.5 ) ";
+
+    this.strokeLine(0, halfHeight, this.canvas.width, halfHeight);
+    this.context2D.strokeStyle = "rgba( 0 , 0 , 255 , 0.5 )";
+
+    this.strokeLine(halfWidth, 0, halfWidth, this.canvas.height);
+    this.context2D.restore();
+
+    this.fillCircle(halfWidth, halfHeight, 5, "rgba( 0 , 0 , 0 , 0.5 ) ");
+  }
+
+  doTransform() {
+    const { context2D, canvas } = this;
+    if (!context2D) return;
+    context2D?.save();
+    const radian = Math2D.toRadian(20);
+    context2D?.rotate(radian);
+    context2D?.translate(canvas.width / 2, canvas.height / 2);
+    context2D.fillStyle = "red";
+    context2D?.fillRect(0, 0, 100, 50);
+    context2D.restore();
+  }
+
+  private strokeLine(x0: number, y0: number, x1: number, y1: number): void {
     if (this.context2D !== null) {
       this.context2D.beginPath();
       this.context2D.moveTo(x0, y0);
@@ -58,7 +92,7 @@ export default class Editor extends Canvas2DApplication {
     }
   }
 
-  public fillCircle(
+  private fillCircle(
     x: number,
     y: number,
     radius: number,
@@ -73,7 +107,7 @@ export default class Editor extends Canvas2DApplication {
       this.context2D.restore();
     }
   }
-  public strokeCoord(
+  private strokeCoord(
     orginX: number,
     orginY: number,
     width: number,
@@ -90,14 +124,9 @@ export default class Editor extends Canvas2DApplication {
       this.context2D.restore();
     }
   }
-  // 调色板
-  public drawColor() {
-    const colorCanvas = this.getColorCanvas();
-    this.context2D?.drawImage(colorCanvas, 0, 0);
-    console.log(colorCanvas);
-  }
+
   // 离屏canvas
-  public getColorCanvas(amount: number = 30): HTMLCanvasElement {
+  private getColorCanvas(amount: number = 30): HTMLCanvasElement {
     let step: number = 4;
     let canvas: HTMLCanvasElement = document.createElement(
       "canvas"
@@ -131,15 +160,5 @@ export default class Editor extends Canvas2DApplication {
 
   protected dispatchMouseDown(evt: CanvasMouseEvent): void {
     console.log(" canvasPosition : " + evt.canvasPosition);
-  }
-
-  public update(elapsedMsec: number, intervalSec: number): void {
-    console.log(
-      " elapsedMsec : " + elapsedMsec + " intervalSec : " + intervalSec
-    );
-  }
-
-  public render(): void {
-    console.log(" 调用render方法 ");
   }
 }

@@ -44,6 +44,18 @@ const CanvasApplication = () => {
           editor?.drawColor();
         },
         text: "调色板",
+      },
+      {
+        click: () => {
+          editor?.drawCanvasCoordCenter();
+        },
+        text: "中心点坐标系",
+      },
+      {
+        click: () => {
+          editor?.doTransform();
+        },
+        text: "变换",
       }
     );
     return btns.map((item, index) => (

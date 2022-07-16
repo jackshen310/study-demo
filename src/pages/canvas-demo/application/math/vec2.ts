@@ -39,19 +39,35 @@ export default class Vec2 {
     Vec2.sum(this, right, this);
     return this;
   }
-
+  /**
+   * 向量相加，{x1,y1} + {x2,y2} = {x1+x2, y1+y2}
+   * @param left
+   * @param right
+   * @param result
+   * @returns
+   */
   public static sum(left: Vec2, right: Vec2, result: Vec2 | null = null): Vec2 {
     if (result === null) result = new Vec2();
     result.values[0] = left.values[0] + right.values[0];
     result.values[1] = left.values[1] + right.values[1];
     return result;
   }
-
+  /**
+   * 向量相减
+   * @param another
+   * @returns
+   */
   public substract(another: Vec2): Vec2 {
     Vec2.difference(this, another, this);
     return this;
   }
-
+  /**
+   * 向量相减，{x1,y1} - {x2,y2} = {x1-x2, y1-y2}
+   * @param end
+   * @param start
+   * @param result
+   * @returns
+   */
   public static difference(
     end: Vec2,
     start: Vec2,
@@ -69,7 +85,13 @@ export default class Vec2 {
     result.values[1] = src.values[1];
     return result;
   }
-
+  /**
+   * 向量缩放，{x,y} * scale = {x*scale, y*scale}
+   * @param direction
+   * @param scalar
+   * @param result
+   * @returns
+   */
   public static scale(
     direction: Vec2,
     scalar: number,

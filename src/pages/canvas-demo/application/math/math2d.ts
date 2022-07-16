@@ -6,14 +6,28 @@ const PiBy180 = Math.PI / 180;
 const EPSILON: number = 0.00001;
 
 export default class Math2D {
+  /**
+   * 角度 to 弧度
+   * @param degree
+   * @returns
+   */
   public static toRadian(degree: number): number {
     return degree * PiBy180;
   }
-
+  /**
+   * 弧度 to 角度
+   * @param radian
+   * @returns
+   */
   public static toDegree(radian: number): number {
     return radian / PiBy180;
   }
-
+  /**
+   * 生成[from,to]范围内的随机数
+   * @param from
+   * @param to
+   * @returns
+   */
   public static random(from: number, to: number): number {
     return Math.random() * to + from;
   }
@@ -149,6 +163,14 @@ export default class Math2D {
   //     return new BezierEnumerator(start, end, ctrl0, ctrl1, steps);
   //   }
 
+  /**
+   * 判断点是否在线上
+   * @param pt
+   * @param start
+   * @param end
+   * @param closePoint
+   * @returns
+   */
   public static projectPointOnLineSegment(
     pt: vec2,
     start: vec2,
@@ -177,7 +199,14 @@ export default class Math2D {
       return true;
     }
   }
-
+  /**
+   * 判断坐标是否在线附近
+   * @param pt
+   * @param start
+   * @param end
+   * @param radius
+   * @returns
+   */
   public static isPointOnLineSegment(
     pt: vec2,
     start: vec2,
@@ -190,7 +219,13 @@ export default class Math2D {
     }
     return Math2D.isPointInCircle(pt, closePt, radius);
   }
-
+  /**
+   * 判断坐标是否在圆内部
+   * @param pt
+   * @param center
+   * @param radius
+   * @returns
+   */
   public static isPointInCircle(
     pt: vec2,
     center: vec2,
@@ -203,7 +238,16 @@ export default class Math2D {
     }
     return false;
   }
-
+  /**
+   * 判断坐标是否在矩形内部
+   * @param ptX
+   * @param ptY
+   * @param x
+   * @param y
+   * @param w
+   * @param h
+   * @returns
+   */
   public static isPointInRect(
     ptX: number,
     ptY: number,
@@ -217,7 +261,16 @@ export default class Math2D {
     }
     return false;
   }
-
+  /**
+   * 判断坐标是否在椭圆内部
+   * @param ptX
+   * @param ptY
+   * @param centerX
+   * @param centerY
+   * @param radiusX
+   * @param radiusY
+   * @returns
+   */
   public static isPointInEllipse(
     ptX: number,
     ptY: number,
@@ -239,14 +292,26 @@ export default class Math2D {
     let e2: vec2 = vec2.difference(v1, v2);
     return vec2.crossProduct(e1, e2);
   }
-
+  /**
+   * 判断坐标是否在三角形内部
+   * @param pt
+   * @param v0
+   * @param v1
+   * @param v2
+   * @returns
+   */
   public static isPointInTriangle(pt: vec2, v0: vec2, v1: vec2, v2: vec2) {
     let b1: boolean = Math2D.sign(v0, v1, pt) < 0.0;
     let b2: boolean = Math2D.sign(v1, v2, pt) < 0.0;
     let b3: boolean = Math2D.sign(v2, v0, pt) < 0.0;
     return b1 === b2 && b2 === b3;
   }
-
+  /**
+   * 判断坐标是否在多边形内部
+   * @param pt
+   * @param points
+   * @returns
+   */
   public static isPointInPolygon(pt: vec2, points: vec2[]): boolean {
     if (points.length < 3) {
       return false;
@@ -287,6 +352,19 @@ export default class Math2D {
       mat.values[3] * pt.values[1] +
       mat.values[5];
     return result;
+  }
+  /**
+   * 两点的距离
+   * @param x0 
+   * @param y0 
+   * @param x1 
+   * @param y1 
+   * @returns 
+   */
+  public distance(x0: number, y0: number, x1: number, y1: number): number {
+    let diffX: number = x1 - x0;
+    let diffY: number = y1 - y0;
+    return Math.sqrt(diffX * diffX + diffY * diffY);
   }
 
   public static matStack: MatrixStack = new MatrixStack();
