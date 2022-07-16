@@ -181,30 +181,44 @@ export default class Math2D {
     let v1: vec2 = vec2.create();
     let d: number = 0;
 
+    // 向量起点到鼠标位置的方向向量
     vec2.difference(pt, start, v0);
+    // 向量起点到向量终点的方向向量
     vec2.difference(end, start, v1);
+    // 原向量变成单位向量，并返回原向量的长度
     d = v1.normalize();
-
+    // 将v0投影到v1上,获取投影长度
+    // v0*v1 = ||v0|| * ||v1|| * cosθ
+    // v1是单位向量，所有 ||v1|| = 1
+    // 于是 v0*v1 = ||v0|| * cosθ，也就是v0在v1上的投影长度
     let t: number = vec2.dotProduct(v0, v1);
+
+    // 如果t < 0，说明鼠标在起始点之外，返回起始点
     if (t < 0) {
       closePoint.x = start.x;
       closePoint.y = start.y;
       return false;
     } else if (t > d) {
+      // 投影长度 > 线段长度，说明鼠标位置超过线段终点范围
       closePoint.x = end.x;
       closePoint.y = end.y;
       return false;
     } else {
+      // 鼠标点位于线段中间
+      // 使用scaleAdd计算出相对于全局坐标的坐标偏远信息
+      // start 起点向量
+      // v1 * t 投影向量
+      // start + v1（单位向量）*t（标量） 相对于全局坐标的向量
       vec2.scaleAdd(start, v1, t, closePoint);
       return true;
     }
   }
   /**
    * 判断坐标是否在线附近
-   * @param pt
-   * @param start
-   * @param end
-   * @param radius
+   * @param pt 鼠标位置
+   * @param start 线段起始点
+   * @param end 线段终止点
+   * @param radius 碰撞半径
    * @returns
    */
   public static isPointOnLineSegment(
@@ -221,9 +235,9 @@ export default class Math2D {
   }
   /**
    * 判断坐标是否在圆内部
-   * @param pt
-   * @param center
-   * @param radius
+   * @param pt 鼠标坐标
+   * @param center 圆中心坐标
+   * @param radius 半径
    * @returns
    */
   public static isPointInCircle(
@@ -233,6 +247,7 @@ export default class Math2D {
   ): boolean {
     let diff: vec2 = vec2.difference(pt, center);
     let len2: number = diff.squaredLength;
+    // 避免使用Math.sqrt方法
     if (len2 <= radius * radius) {
       return true;
     }
@@ -240,12 +255,12 @@ export default class Math2D {
   }
   /**
    * 判断坐标是否在矩形内部
-   * @param ptX
-   * @param ptY
-   * @param x
-   * @param y
-   * @param w
-   * @param h
+   * @param ptX 鼠标位置
+   * @param ptY 鼠标位置
+   * @param x 矩形左上角
+   * @param y 矩形左上角
+   * @param w 矩形宽度
+   * @param h 矩形高度
    * @returns
    */
   public static isPointInRect(
@@ -286,14 +301,22 @@ export default class Math2D {
       (diffY * diffY) / (radiusY * radiusY);
     return n <= 1.0;
   }
-
+  /**
+   * 计算三角形两条边向量的叉乘
+   * @param v0
+   * @param v1
+   * @param v2
+   * @returns
+   */
   public static sign(v0: vec2, v1: vec2, v2: vec2): number {
+    // v2->v0边向量
     let e1: vec2 = vec2.difference(v0, v2);
+    // v2->v1边向量
     let e2: vec2 = vec2.difference(v1, v2);
     return vec2.crossProduct(e1, e2);
   }
   /**
-   * 判断坐标是否在三角形内部
+   * 判断鼠标是否在三角形内部
    * @param pt
    * @param v0
    * @param v1
@@ -301,13 +324,16 @@ export default class Math2D {
    * @returns
    */
   public static isPointInTriangle(pt: vec2, v0: vec2, v1: vec2, v2: vec2) {
+    // 计算三角形的三个定点与鼠标形成的三个子三角形的边向量的叉乘
     let b1: boolean = Math2D.sign(v0, v1, pt) < 0.0;
     let b2: boolean = Math2D.sign(v1, v2, pt) < 0.0;
     let b3: boolean = Math2D.sign(v2, v0, pt) < 0.0;
+    // 三个三角形的方向一致，说明点在三角形内部
+    // 否则点在三角形外部
     return b1 === b2 && b2 === b3;
   }
   /**
-   * 判断坐标是否在多边形内部
+   * 判断坐标是否在凸多边形内部
    * @param pt
    * @param points
    * @returns
@@ -316,6 +342,8 @@ export default class Math2D {
     if (points.length < 3) {
       return false;
     }
+    // 以point[0]为共享点，遍历多边形点集，构成三角形，判断点是否在三角形内部,
+    // 一旦点与某个三角形发生碰撞，就返回true
     for (let i: number = 2; i < points.length; i++) {
       if (Math2D.isPointInTriangle(pt, points[0], points[i - 1], points[i])) {
         return true;
@@ -323,17 +351,24 @@ export default class Math2D {
     }
     return false;
   }
-
+  /**
+   * 判断是否凸多边形
+   * @param points
+   * @returns
+   */
   public static isConvex(points: vec2[]): boolean {
+    // 算出第一个三角形的定点顺序
     let sign: boolean = Math2D.sign(points[0], points[1], points[2]) < 0;
     let j: number, k: number;
     for (let i: number = 1; i < points.length; i++) {
       j = (i + 1) % points.length;
       k = (i + 2) % points.length;
+      // 如果当前多边形的顶点顺序和第一个多边形的顶点顺序不一致，则说明是凹边形
       if (sign !== Math2D.sign(points[i], points[j], points[k]) < 0) {
         return false;
       }
     }
+    // 凸多边形
     return true;
   }
 
@@ -355,11 +390,11 @@ export default class Math2D {
   }
   /**
    * 两点的距离
-   * @param x0 
-   * @param y0 
-   * @param x1 
-   * @param y1 
-   * @returns 
+   * @param x0
+   * @param y0
+   * @param x1
+   * @param y1
+   * @returns
    */
   public distance(x0: number, y0: number, x1: number, y1: number): number {
     let diffX: number = x1 - x0;

@@ -132,7 +132,12 @@ export default class Vec2 {
   public static dotProduct(left: Vec2, right: Vec2): number {
     return left.values[0] * right.values[0] + left.values[1] * right.values[1];
   }
-
+  /**
+   * 两个向量的叉乘,返回标量
+   * @param left
+   * @param right
+   * @returns
+   */
   public static crossProduct(left: Vec2, right: Vec2): number {
     return left.x * right.y - left.y * right.x;
   }

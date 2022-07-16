@@ -79,7 +79,13 @@ const CanvasApplication = () => {
         click: () => {
           editor?.drawMouseLineProjection();
         },
-        text: "点到线距离",
+        text: "投影算法",
+      },
+      {
+        click: () => {
+          editor?.isPointInXXX();
+        },
+        text: "碰撞检查",
       }
     );
     return btns.map((item, index) => (

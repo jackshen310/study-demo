@@ -4,6 +4,7 @@ import Math2D from "./math/math2d";
 import Vec2 from "./math/vec2";
 import { Colors } from "./util";
 import Tank from "./Tank";
+import vec2 from "./math/vec2";
 
 type TextAlign = "start" | "left" | "center" | "right" | "end";
 
@@ -66,6 +67,8 @@ export default class Editor extends Canvas2DApplication {
   private _timer: string | number | NodeJS.Timeout | undefined;
   private _isDrawTank = false;
   private _isDrawMouseLine = false;
+  private _isDrawPointInXXX = false;
+
   constructor(canvas: HTMLCanvasElement) {
     super(canvas);
 
@@ -156,12 +159,22 @@ export default class Editor extends Canvas2DApplication {
     context2D.restore();
   }
 
-  public strokeLine(x0: number, y0: number, x1: number, y1: number): void {
+  public strokeLine(
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+    lineWidth = 2
+  ): void {
     if (this.context2D !== null) {
+      this.context2D.save();
+      this.context2D.lineWidth = lineWidth;
       this.context2D.beginPath();
       this.context2D.moveTo(x0, y0);
       this.context2D.lineTo(x1, y1);
       this.context2D.stroke();
+
+      this.context2D.restore();
     }
   }
 
@@ -250,6 +263,10 @@ export default class Editor extends Canvas2DApplication {
         this.closePt
       );
       this.drawMouseLineProjection();
+    }
+
+    if (this._isDrawPointInXXX) {
+      this.isPointInXXX();
     }
   }
   protected dispatchKeyDown(evt: CanvasKeyBoardEvent): void {
@@ -588,6 +605,126 @@ export default class Editor extends Canvas2DApplication {
           this.lineStart.y + 10
         );
       }
+    }
+  }
+  public drawPolygon(
+    points: Vec2[],
+    ptX: number,
+    ptY: number,
+    drawSubTriangle: boolean = false,
+    strokeStyle = "rgba( 0 , 0 , 0 , 0.5 )"
+  ): void {
+    if (this.context2D === null) return;
+    this.context2D.save();
+    this.context2D.strokeStyle = strokeStyle;
+    this.context2D.lineWidth = 3;
+    this.context2D.translate(ptX, ptY);
+
+    // 绘制多边形
+    this.context2D.beginPath();
+    this.context2D.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) {
+      this.context2D.lineTo(points[i].x, points[i].y);
+    }
+    this.context2D.closePath();
+    this.context2D.stroke();
+
+    // 绘制虚线，形成子三角形
+    if (drawSubTriangle === true) {
+      this.context2D.lineWidth = 2;
+      this.context2D.setLineDash([3, 3]);
+      for (let i: number = 1; i < points.length - 1; i++) {
+        this.strokeLine(points[0].x, points[0].y, points[i].x, points[i].y);
+      }
+    }
+
+    this.fillCircle(points[0].x, points[0].y, 5, "red");
+    this.context2D.restore();
+  }
+
+  public isPointInXXX() {
+    this._isDrawPointInXXX = true;
+    this.clearRect();
+
+    this.isPointInCircle();
+    this.isPointInLineSegment();
+    this.isPointInTriangle();
+    this.isPointInPolygon();
+  }
+
+  public isPointInCircle() {
+    const circle = new Vec2(100, 100);
+    const radius = 50;
+
+    if (Math2D.isPointInCircle(this.mouse, circle, radius)) {
+      this.fillCircle(circle.x, circle.y, 50, "blue");
+    } else {
+      this.fillCircle(circle.x, circle.y, 50);
+    }
+  }
+
+  public isPointInLineSegment() {
+    const start = new Vec2(200, 100);
+    const end = new Vec2(250, 250);
+    const radius = 5;
+
+    if (Math2D.isPointOnLineSegment(this.mouse, start, end, radius)) {
+      this.strokeLine(start.x, start.y, end.x, end.y, 5);
+    } else {
+      this.strokeLine(start.x, start.y, end.x, end.y, 2);
+    }
+  }
+
+  public isPointInTriangle() {
+    const p1 = new Vec2(300, 300);
+    const p2 = new Vec2(300, 350);
+    const p3 = new Vec2(350, 350);
+
+    if (Math2D.isPointInTriangle(this.mouse, p1, p2, p3)) {
+      this.strokeLine(p1.x, p1.y, p2.x, p2.y, 5);
+      this.strokeLine(p1.x, p1.y, p3.x, p3.y, 5);
+      this.strokeLine(p3.x, p3.y, p2.x, p2.y, 5);
+    } else {
+      this.strokeLine(p1.x, p1.y, p2.x, p2.y, 2);
+      this.strokeLine(p1.x, p1.y, p3.x, p3.y, 2);
+      this.strokeLine(p3.x, p3.y, p2.x, p2.y, 2);
+    }
+  }
+  public isPointInPolygon() {
+    if (this.context2D) {
+      this.context2D.save();
+      this.context2D.translate(-250, 0);
+      const points = [
+        vec2.create(-100, -50),
+        vec2.create(0, -100),
+        vec2.create(100, -50),
+        vec2.create(100, 50),
+        vec2.create(0, 100),
+        vec2.create(-100, 50),
+      ];
+      const pt = new Vec2(this.mouse.x - 400 - -250, this.mouse.y - 300 - 0);
+      if (Math2D.isPointInPolygon(pt, points)) {
+        this.drawPolygon(points, 400, 300, true, "red");
+      } else {
+        this.drawPolygon(points, 400, 300, true);
+      }
+
+      this.context2D.restore();
+
+      this.context2D.save();
+      this.context2D.translate(425, 325);
+      this.drawPolygon(
+        [
+          vec2.create(0, 0),
+          vec2.create(100, -100),
+          vec2.create(100, 50),
+          vec2.create(-100, 50),
+          vec2.create(-100, -100),
+        ],
+        0,
+        0
+      );
+      this.context2D.restore();
     }
   }
 }
