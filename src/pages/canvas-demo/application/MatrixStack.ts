@@ -17,11 +17,14 @@ export default class MatrixStack {
 
     return this._mats[this._mats.length - 1];
   }
-  // 将当前matrix push栈
+  /**
+   * 将当前matrix push栈
+   */
   public pushMatrix(): void {
     let mat: mat2d = mat2d.copy(this.matrix);
     this._mats.push(mat);
   }
+
   // 获取栈顶
   public popMatrix(): void {
     if (this._mats.length === 0) {

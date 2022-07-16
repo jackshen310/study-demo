@@ -3,6 +3,7 @@ import Math2D from "./math/math2d";
 import Editor from "./editor";
 import Vec2 from "./math/vec2";
 import mat2d from "./math/mat2d";
+import MatrixStack from "./MatrixStack";
 
 export default class Tank {
   public width: number = 80;
@@ -24,6 +25,8 @@ export default class Tank {
 
   public linearSpeed: number = 100.0;
   public turretRotateSpeed: number = Math2D.toRadian(2);
+
+  public matStack: MatrixStack = new MatrixStack();
 
   public get x() {
     return this.pos.x;
@@ -118,11 +121,21 @@ export default class Tank {
       return;
     }
     app.context2D.save();
-    app.context2D.translate(this.pos.x, this.pos.y);
-    // app.context2D.rotate(this.tankRotation);
-    app.transform(this.tankRotation);
-    app.context2D.scale(this.scale.x, this.scale.y);
+    this.matStack.pushMatrix();
+
+    // app.context2D.translate(this.pos.x, this.pos.y);
+    // // app.context2D.rotate(this.tankRotation);
+    // app.transform(this.tankRotation);
+    // app.context2D.scale(this.scale.x, this.scale.y);
+
+    this.matStack.translate(this.pos.x, this.pos.y);
+    this.matStack.multMatrix(this.tankRotation);
+    this.matStack.scale(this.scale.x, this.scale.y);
+    app.setTransform(this.matStack.matrix);
+
     app.context2D.save();
+    this.matStack.pushMatrix(); // 实际可以取消，内部没有变换操作
+
     app.context2D.fillStyle = "grey";
     app.context2D.beginPath();
     app.context2D.rect(
@@ -132,10 +145,15 @@ export default class Tank {
       this.height
     );
     app.context2D.fill();
+    this.matStack.popMatrix(); // 实际可以取消，内部没有变换操作
     app.context2D.restore();
     // 炮塔+炮管+炮口，共享同一个坐标系
     app.context2D.save();
-    app.context2D.rotate(this.turretRotation);
+    this.matStack.pushMatrix();
+    // app.context2D.rotate(this.turretRotation);
+    this.matStack.rotate(this.turretRotation, true);
+    app.setTransform(this.matStack.matrix);
+
     app.context2D.fillStyle = "red";
     app.context2D.beginPath();
     app.context2D.ellipse(0, 0, 15, 10, 0, 0, Math.PI * 2);
@@ -150,15 +168,27 @@ export default class Tank {
     app.context2D.lineTo(this.gunLength, 0);
     app.context2D.stroke();
     // 炮口
-    app.context2D.translate(this.gunLength, 0);
-    app.context2D.translate(this.gunMuzzleRadius, 0);
+    // app.context2D.translate(this.gunLength, 0);
+    // app.context2D.translate(this.gunMuzzleRadius, 0);
+    this.matStack.translate(this.gunLength, 0);
+    this.matStack.translate(this.gunMuzzleRadius, 0);
+    app.setTransform(this.matStack.matrix);
+
     app.fillCircle(0, 0, 5, "black");
+    this.matStack.popMatrix();
     app.context2D.restore();
 
     // 圆
     app.context2D.save();
-    app.context2D.translate(this.width * 0.5, 0);
+    this.matStack.pushMatrix();
+
+    // app.context2D.translate(this.width * 0.5, 0);
+    this.matStack.translate(this.width * 0.5, 0);
+    app.setTransform(this.matStack.matrix);
+
     app.fillCircle(0, 0, 10, "green");
+
+    this.matStack.popMatrix();
     app.context2D.restore();
 
     // 画坐标系
@@ -169,6 +199,7 @@ export default class Tank {
       app.strokeCoord(0, 0, this.width * 1.2, this.height * 1.2);
       app.context2D.restore();
     }
+    this.matStack.popMatrix();
     app.context2D.restore();
 
     // 中心点到画布中心点直线

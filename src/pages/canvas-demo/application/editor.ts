@@ -742,4 +742,19 @@ export default class Editor extends Canvas2DApplication {
       mat.values[5]
     );
   }
+
+  public setTransform(mat: mat2d): void {
+    if (this.context2D === null) {
+      return;
+    }
+
+    this.context2D.setTransform(
+      mat.values[0],
+      mat.values[1],
+      mat.values[2],
+      mat.values[3],
+      mat.values[4],
+      mat.values[5]
+    );
+  }
 }
