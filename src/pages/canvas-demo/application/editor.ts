@@ -6,6 +6,9 @@ import { Colors } from "./util";
 import Tank from "./Tank";
 import vec2 from "./math/vec2";
 import mat2d from "./math/mat2d";
+import { IDispatcher, ISpriteContainer } from "./sprite/interface";
+import { Sprite2DManager } from "./sprite/sprite2dManager";
+import IShape_Event_Hittest_Draw_Test_Demo from "./IShape_Event_Hittest_Draw_Test_Demo";
 
 type TextAlign = "start" | "left" | "center" | "right" | "end";
 
@@ -70,11 +73,18 @@ export default class Editor extends Canvas2DApplication {
   private _isDrawMouseLine = false;
   private _isDrawPointInXXX = false;
 
+  protected _dispatcher: IDispatcher;
+
   constructor(canvas: HTMLCanvasElement) {
     super(canvas);
 
+    document.oncontextmenu = function () {
+      return false;
+    };
     this.mouse = Vec2.create();
     this.tank = null;
+    this._dispatcher = new Sprite2DManager();
+
     this.init();
   }
   init() {
@@ -93,7 +103,10 @@ export default class Editor extends Canvas2DApplication {
     //tank.turretRotation = Math2D.toRadian(-30);
     this.tank = tank;
   }
-  getMouse() {
+  public get rootContainer(): ISpriteContainer {
+    return this._dispatcher.container;
+  }
+  public getMouse() {
     return this.mouse;
   }
   // 绘制网格线
@@ -269,13 +282,33 @@ export default class Editor extends Canvas2DApplication {
     if (this._isDrawPointInXXX) {
       this.isPointInXXX();
     }
+
+    this._dispatcher.dispatchMouseEvent(evt);
   }
   protected dispatchKeyDown(evt: CanvasKeyBoardEvent): void {
     console.log(" key : " + evt.key + " is down ");
+    this._dispatcher.dispatchKeyEvent(evt);
   }
 
   protected dispatchMouseDown(evt: CanvasMouseEvent): void {
     console.log(" canvasPosition : " + evt.canvasPosition);
+
+    this._dispatcher.dispatchMouseEvent(evt);
+  }
+
+  protected dispatchMouseUp(evt: CanvasMouseEvent): void {
+    super.dispatchMouseUp(evt);
+    this._dispatcher.dispatchMouseEvent(evt);
+  }
+
+  protected dispatchMouseDrag(evt: CanvasMouseEvent): void {
+    super.dispatchMouseDrag(evt);
+    this._dispatcher.dispatchMouseEvent(evt);
+  }
+
+  protected dispatchKeyPress(evt: CanvasKeyBoardEvent): void {
+    super.dispatchKeyPress(evt);
+    this._dispatcher.dispatchKeyEvent(evt);
   }
   public fillText(
     text: string,
@@ -756,5 +789,17 @@ export default class Editor extends Canvas2DApplication {
       mat.values[4],
       mat.values[5]
     );
+  }
+  public start() {
+    setInterval(() => {
+      this._dispatcher.dispatchDraw(this.context2D!);
+    }, 100);
+  }
+  public drawSprite() {
+    if (!this.context2D) return;
+    this.rootContainer.start();
+    // this.clearRect();
+
+    new IShape_Event_Hittest_Draw_Test_Demo(this);
   }
 }

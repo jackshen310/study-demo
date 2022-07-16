@@ -86,6 +86,12 @@ const CanvasApplication = () => {
           editor?.isPointInXXX();
         },
         text: "碰撞检查",
+      },
+      {
+        click: () => {
+          editor?.drawSprite();
+        },
+        text: "精灵系统",
       }
     );
     return btns.map((item, index) => (
