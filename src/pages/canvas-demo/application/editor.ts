@@ -63,6 +63,7 @@ export default class Editor extends Canvas2DApplication {
   tank: Tank | null;
   private _mouseX = 0;
   private _mouseY = 0;
+  private _timer: string | number | NodeJS.Timeout | undefined;
   constructor(canvas: HTMLCanvasElement) {
     super(canvas);
 
@@ -80,10 +81,10 @@ export default class Editor extends Canvas2DApplication {
     // tank在中心点
     tank.x = this.canvas.width * 0.5;
     tank.y = this.canvas.height * 0.5;
-    tank.scaleX = 2; // 效果是，原来tank的宽度只有80，放大两倍后，宽度变为160，但是在draw的时候，传的坐标还是80的
-    tank.scaleY = 2;
-    tank.tankRotation = Math2D.toRadian(30);
-    tank.turretRotation = Math2D.toRadian(-30);
+    //tank.scaleX = 2; // 效果是，原来tank的宽度只有80，放大两倍后，宽度变为160，但是在draw的时候，传的坐标还是80的
+    //tank.scaleY = 2;
+    //tank.tankRotation = Math2D.toRadian(30);
+    //tank.turretRotation = Math2D.toRadian(-30);
     this.tank = tank;
   }
   getMouse() {
@@ -232,6 +233,12 @@ export default class Editor extends Canvas2DApplication {
     if (this.tank) {
       this.tank.onMouseMove(evt);
       this.drawTank();
+
+      this._timer && clearInterval(this._timer);
+      this._timer = setInterval(() => {
+        this.tank?.update(0.1);
+        this.drawTank();
+      }, 100);
     }
   }
   protected dispatchKeyDown(evt: CanvasKeyBoardEvent): void {
