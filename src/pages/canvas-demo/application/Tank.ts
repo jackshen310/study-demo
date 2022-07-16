@@ -26,6 +26,7 @@ export default class Tank {
   public turretRotateSpeed: number = Math2D.toRadian(2);
 
   private _lookAt(): void {
+    // 计算夹角
     let diffX: number = this.targetX - this.x;
     let diffY: number = this.targetY - this.y;
     let radian = Math.atan2(diffY, diffX);
@@ -81,7 +82,7 @@ export default class Tank {
     );
     app.context2D.fill();
     app.context2D.restore();
-
+    // 炮塔+炮管+炮口，共享同一个坐标系
     app.context2D.save();
     app.context2D.rotate(this.turretRotation);
     app.context2D.fillStyle = "red";

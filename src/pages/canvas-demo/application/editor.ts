@@ -60,14 +60,31 @@ type FontFamily = "sans-serif" | "serif" | "courier" | "fantasy" | "monospace";
 export default class Editor extends Canvas2DApplication {
   isSupportMouseMove = true;
   mouse: Vec2;
+  tank: Tank | null;
+  private _mouseX = 0;
+  private _mouseY = 0;
   constructor(canvas: HTMLCanvasElement) {
     super(canvas);
 
     this.mouse = Vec2.create();
+    this.tank = null;
     this.init();
   }
   init() {
     // this.start();
+    this.initTank();
+  }
+  initTank() {
+    const tank = new Tank();
+    tank.initYAxis = false;
+    // tank在中心点
+    tank.x = this.canvas.width * 0.5;
+    tank.y = this.canvas.height * 0.5;
+    tank.scaleX = 2; // 效果是，原来tank的宽度只有80，放大两倍后，宽度变为160，但是在draw的时候，传的坐标还是80的
+    tank.scaleY = 2;
+    tank.tankRotation = Math2D.toRadian(30);
+    tank.turretRotation = Math2D.toRadian(-30);
+    this.tank = tank;
   }
   getMouse() {
     return this.mouse;
@@ -208,6 +225,14 @@ export default class Editor extends Canvas2DApplication {
   }
   protected dispatchMouseMove(evt: CanvasMouseEvent): void {
     this.mouse = evt.canvasPosition;
+
+    this._mouseX = evt.canvasPosition.x;
+    this._mouseY = evt.canvasPosition.y;
+
+    if (this.tank) {
+      this.tank.onMouseMove(evt);
+      this.drawTank();
+    }
   }
   protected dispatchKeyDown(evt: CanvasKeyBoardEvent): void {
     console.log(" key : " + evt.key + " is down ");
@@ -237,18 +262,29 @@ export default class Editor extends Canvas2DApplication {
   }
   // 画坦克
   public drawTank() {
+    if (!this.tank) {
+      return;
+    }
+    this.clearRect();
     this.strokeGrid(); // 网格线
     this.draw4Quadrant(); // 四象限
-    this.drawCanvasCoordCenter(); // 中心原点
+    this.drawCanvasCoordCenter(); // 中心原点坐标系
+    this.tank.draw(this);
 
-    const tank = new Tank();
-    tank.initYAxis = false;
-    tank.x = this.canvas.width * 0.5;
-    tank.y = this.canvas.height * 0.5;
-
-    tank.draw(this);
+    this.drawCoordInfo(
+      "坐标 : [" +
+        (this._mouseX - this.tank.x).toFixed(2) +
+        "," +
+        (this._mouseY - this.tank.y).toFixed(2) +
+        "] 角度 : " +
+        Math2D.toDegree(this.tank.tankRotation).toFixed(2),
+      this._mouseX,
+      this._mouseY
+    );
   }
-
+  public drawCoordInfo(info: string, x: number, y: number): void {
+    this.fillText(info, x, y, "black", "center", "bottom");
+  }
   // 四象限
   public draw4Quadrant(): void {
     if (this.context2D === null) {
