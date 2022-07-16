@@ -3,6 +3,59 @@ import { CanvasKeyBoardEvent, CanvasMouseEvent } from "./event";
 import Math2D from "./math/math2d";
 import Vec2 from "./math/vec2";
 import { Colors } from "./util";
+import Tank from "./Tank";
+
+type TextAlign = "start" | "left" | "center" | "right" | "end";
+
+type TextBaseline = "alphabetic" | "hanging" | "top" | "middle" | "bottom";
+
+type FontType =
+  | "10px sans-serif"
+  | "15px sans-serif"
+  | "20px sans-serif"
+  | "25px sans-serif";
+
+type PatternRepeat = "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
+
+type FontStyle = "normal" | "italic" | "oblique";
+
+type FontVariant = "normal" | "small-caps";
+
+type FontWeight =
+  | "normal"
+  | "bold"
+  | "bolder"
+  | "lighter"
+  | "100"
+  | "200"
+  | "300"
+  | "400"
+  | "500"
+  | "600"
+  | "700"
+  | "800"
+  | "900";
+
+type FontSize =
+  | "10px"
+  | "12px"
+  | "16px"
+  | "18px"
+  | "24px"
+  | "50%"
+  | "75%"
+  | "100%"
+  | "125%"
+  | "150%"
+  | "xx-small"
+  | "x-small"
+  | "small"
+  | "medium"
+  | "large"
+  | "x-large"
+  | "xx-large";
+
+type FontFamily = "sans-serif" | "serif" | "courier" | "fantasy" | "monospace";
 
 export default class Editor extends Canvas2DApplication {
   isSupportMouseMove = true;
@@ -71,7 +124,7 @@ export default class Editor extends Canvas2DApplication {
     this.fillCircle(halfWidth, halfHeight, 5, "rgba( 0 , 0 , 0 , 0.5 ) ");
   }
 
-  doTransform() {
+  public doTransform() {
     const { context2D, canvas } = this;
     if (!context2D) return;
     context2D?.save();
@@ -83,7 +136,7 @@ export default class Editor extends Canvas2DApplication {
     context2D.restore();
   }
 
-  private strokeLine(x0: number, y0: number, x1: number, y1: number): void {
+  public strokeLine(x0: number, y0: number, x1: number, y1: number): void {
     if (this.context2D !== null) {
       this.context2D.beginPath();
       this.context2D.moveTo(x0, y0);
@@ -92,7 +145,7 @@ export default class Editor extends Canvas2DApplication {
     }
   }
 
-  private fillCircle(
+  public fillCircle(
     x: number,
     y: number,
     radius: number,
@@ -107,7 +160,9 @@ export default class Editor extends Canvas2DApplication {
       this.context2D.restore();
     }
   }
-  private strokeCoord(
+
+  // 画坐标系
+  public strokeCoord(
     orginX: number,
     orginY: number,
     width: number,
@@ -160,5 +215,85 @@ export default class Editor extends Canvas2DApplication {
 
   protected dispatchMouseDown(evt: CanvasMouseEvent): void {
     console.log(" canvasPosition : " + evt.canvasPosition);
+  }
+  public fillText(
+    text: string,
+    x: number,
+    y: number,
+    color: string = "white",
+    align: TextAlign = "left",
+    baseline: TextBaseline = "top",
+    font: FontType = "10px sans-serif"
+  ): void {
+    if (this.context2D !== null) {
+      this.context2D.save();
+      this.context2D.textAlign = align;
+      this.context2D.textBaseline = baseline;
+      this.context2D.font = font;
+      this.context2D.fillStyle = color;
+      this.context2D.fillText(text, x, y);
+      this.context2D.restore();
+    }
+  }
+  // 画坦克
+  public drawTank() {
+    this.strokeGrid(); // 网格线
+    this.draw4Quadrant(); // 四象限
+    this.drawCanvasCoordCenter(); // 中心原点
+
+    const tank = new Tank();
+    tank.initYAxis = false;
+    tank.x = this.canvas.width * 0.5;
+    tank.y = this.canvas.height * 0.5;
+
+    tank.draw(this);
+  }
+
+  // 四象限
+  public draw4Quadrant(): void {
+    if (this.context2D === null) {
+      return;
+    }
+
+    this.context2D.save();
+
+    this.fillText(
+      "第一象限",
+      this.canvas.width,
+      this.canvas.height,
+      "rgba( 0 , 0 , 255 , 0.5 )",
+      "right",
+      "bottom",
+      "20px sans-serif"
+    );
+    this.fillText(
+      "第二象限",
+      0,
+      this.canvas.height,
+      "rgba( 0 , 0 , 255 , 0.5 )",
+      "left",
+      "bottom",
+      "20px sans-serif"
+    );
+    this.fillText(
+      "第三象限",
+      0,
+      0,
+      "rgba( 0 , 0 , 255 , 0.5 )",
+      "left",
+      "top",
+      "20px sans-serif"
+    );
+    this.fillText(
+      "第四象限",
+      this.canvas.width,
+      0,
+      "rgba( 0 , 0 , 255 , 0.5 )",
+      "right",
+      "top",
+      "20px sans-serif"
+    );
+
+    this.context2D.restore();
   }
 }

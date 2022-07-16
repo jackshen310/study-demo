@@ -56,6 +56,12 @@ const CanvasApplication = () => {
           editor?.doTransform();
         },
         text: "变换",
+      },
+      {
+        click: () => {
+          editor?.drawTank();
+        },
+        text: "坦克",
       }
     );
     return btns.map((item, index) => (
