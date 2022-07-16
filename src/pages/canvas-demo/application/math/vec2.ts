@@ -136,7 +136,7 @@ export default class Vec2 {
   public static crossProduct(left: Vec2, right: Vec2): number {
     return left.x * right.y - left.y * right.x;
   }
-
+  // 计算两个向量的连起来与x轴的夹角
   public static getOrientation(
     from: Vec2,
     to: Vec2,
@@ -149,7 +149,7 @@ export default class Vec2 {
     }
     return radian;
   }
-
+  // 根据公式：cosθ = a·b / ( || a || || b || )，计算向量a和向量b的夹角
   public static getAngle(a: Vec2, b: Vec2, isRadian: boolean = false): number {
     let dot: number = Vec2.dotProduct(a, b);
     let radian: number = Math.acos(dot / (a.length * b.length));

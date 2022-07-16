@@ -1,12 +1,12 @@
 import { CanvasKeyBoardEvent, CanvasMouseEvent } from "./event";
 import Math2D from "./math/math2d";
 import Editor from "./editor";
+import Vec2 from "./math/vec2";
 
 export default class Tank {
   public width: number = 80;
   public height: number = 50;
-  public x: number = 100;
-  public y: number = 100;
+  public pos = new Vec2(100, 100);
   public scaleX: number = 1.0;
   public scaleY: number = 1.0;
   public tankRotation: number = 0;
@@ -19,11 +19,38 @@ export default class Tank {
   public gunLength: number = Math.max(this.width, this.height);
   public gunMuzzleRadius: number = 5;
 
-  public targetX: number = 0;
-  public targetY: number = 0;
+  public target = new Vec2();
 
   public linearSpeed: number = 100.0;
   public turretRotateSpeed: number = Math2D.toRadian(2);
+
+  public get x() {
+    return this.pos.x;
+  }
+  public set x(x) {
+    this.pos.x = x;
+  }
+
+  public get y() {
+    return this.pos.y;
+  }
+  public set y(y) {
+    this.pos.y = y;
+  }
+
+  public get targetX() {
+    return this.target.x;
+  }
+  public set targetX(x) {
+    this.target.x = x;
+  }
+
+  public get targetY() {
+    return this.target.y;
+  }
+  public set targetY(y) {
+    this.target.y = y;
+  }
 
   private _lookAt(): void {
     // 计算夹角
@@ -37,14 +64,22 @@ export default class Tank {
     let diffX: number = this.targetX - this.x;
     let diffY: number = this.targetY - this.y;
     let currSpeed: number = this.linearSpeed * intervalSec;
+    console.time("update");
     if (diffX * diffX + diffY * diffY > currSpeed * currSpeed) {
       this.x = this.x + Math.cos(this.tankRotation) * currSpeed;
       this.y = this.y + Math.sin(this.tankRotation) * currSpeed;
     }
+    console.timeEnd("update");
+  }
+  // 用向量计算代替三角函数计算，比三角函数计算的快
+  private _moveTowardTo2(intervalSec: number): void {
+    let dir = Vec2.difference(this.target, this.pos);
+    dir.normalize();
+    this.pos = Vec2.scaleAdd(this.pos, dir, this.linearSpeed * intervalSec);
   }
 
   public update(intervalSec: number): void {
-    this._moveTowardTo(intervalSec);
+    this._moveTowardTo2(intervalSec);
   }
 
   public onMouseMove(evt: CanvasMouseEvent): void {

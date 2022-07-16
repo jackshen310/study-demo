@@ -64,6 +64,8 @@ export default class Editor extends Canvas2DApplication {
   private _mouseX = 0;
   private _mouseY = 0;
   private _timer: string | number | NodeJS.Timeout | undefined;
+  private _isDrawTank = false;
+  private _isDrawMouseLine = false;
   constructor(canvas: HTMLCanvasElement) {
     super(canvas);
 
@@ -230,7 +232,7 @@ export default class Editor extends Canvas2DApplication {
     this._mouseX = evt.canvasPosition.x;
     this._mouseY = evt.canvasPosition.y;
 
-    if (this.tank) {
+    if (this.tank && this._isDrawTank) {
       this.tank.onMouseMove(evt);
       this.drawTank();
 
@@ -239,6 +241,15 @@ export default class Editor extends Canvas2DApplication {
         this.tank?.update(0.1);
         this.drawTank();
       }, 100);
+    }
+    if (this._isDrawMouseLine) {
+      this._hitted = Math2D.projectPointOnLineSegment(
+        Vec2.create(evt.canvasPosition.x, evt.canvasPosition.y),
+        this.lineStart,
+        this.lineEnd,
+        this.closePt
+      );
+      this.drawMouseLineProjection();
     }
   }
   protected dispatchKeyDown(evt: CanvasKeyBoardEvent): void {
@@ -288,6 +299,8 @@ export default class Editor extends Canvas2DApplication {
       this._mouseX,
       this._mouseY
     );
+
+    this._isDrawTank = true;
   }
   public drawCoordInfo(info: string, x: number, y: number): void {
     this.fillText(info, x, y, "black", "center", "bottom");
@@ -338,5 +351,243 @@ export default class Editor extends Canvas2DApplication {
     );
 
     this.context2D.restore();
+  }
+
+  public getOrietation() {
+    const a = Vec2.getOrientation(new Vec2(0, 0), new Vec2(0, 100)); // 90°
+    const a1 = Vec2.getOrientation(new Vec2(0, 100), new Vec2(0, 0)); // -90°
+    const b = Vec2.getOrientation(new Vec2(0, 0), new Vec2(0, -100)); // -90°
+    const c = Vec2.getOrientation(new Vec2(0, 0), new Vec2(100, 0)); // 0°
+    const d = Vec2.getOrientation(new Vec2(0, 0), new Vec2(-100, 0)); // -180°
+
+    console.log(a, a1, b, c, d);
+  }
+
+  public drawVec(
+    len: number,
+    arrowLen: number = 10,
+    beginText: string = "",
+    endText = "",
+    lineWidth: number = 1,
+    isLineDash: boolean = false,
+    showInfo: boolean = true,
+    alpha: boolean = false
+  ): void {
+    if (this.context2D === null) {
+      return;
+    }
+
+    if (len < 0) {
+      arrowLen = -arrowLen;
+    }
+
+    this.context2D.save();
+    this.context2D.lineWidth = lineWidth;
+
+    if (isLineDash) {
+      this.context2D.setLineDash([2, 2]);
+    }
+
+    if (lineWidth > 1) {
+      this.fillCircle(0, 0, 5);
+    } else {
+      this.fillCircle(0, 0, 3);
+    }
+
+    this.context2D.save();
+    if (alpha === true) {
+      this.context2D.strokeStyle = "rgba( 0 , 0 , 0 , 0.3 )";
+    }
+
+    this.strokeLine(0, 0, len, 0);
+
+    // 画两个箭头
+    this.context2D.save();
+    this.strokeLine(len, 0, len - arrowLen, arrowLen);
+    this.context2D.restore();
+
+    this.context2D.save();
+    this.strokeLine(len, 0, len - arrowLen, -arrowLen);
+    this.context2D.restore();
+
+    this.context2D.restore();
+
+    let font: FontType = "15px sans-serif";
+
+    if (beginText !== undefined && beginText.length !== 0) {
+      if (len > 0) {
+        this.fillText(beginText, 0, 0, "black", "right", "bottom", font);
+      } else {
+        this.fillText(beginText, 0, 0, "black", "left", "bottom", font);
+      }
+    }
+
+    len = parseFloat(len.toFixed(2));
+
+    if (beginText !== undefined && endText.length !== 0) {
+      if (len > 0) {
+        this.fillText(endText, len, 0, "black", "left", "bottom", font);
+      } else {
+        this.fillText(endText, len, 0, "black", "right", "bottom", font);
+      }
+    }
+
+    if (showInfo === true) {
+      this.fillText(
+        Math.abs(len).toString(),
+        len * 0.5,
+        0,
+        "black",
+        "center",
+        "bottom",
+        font
+      );
+    }
+
+    this.context2D.restore();
+  }
+  public drawVecFromLine(
+    start: Vec2,
+    end: Vec2,
+    arrowLen: number = 10,
+    beginText: string = "",
+    endText = "",
+    lineWidth: number = 1,
+    isLineDash: boolean = false,
+    showInfo: boolean = false,
+    alpha: boolean = false
+  ): number {
+    let angle: number = Vec2.getOrientation(start, end, true);
+    if (this.context2D !== null) {
+      let diff = Vec2.difference(start, end);
+      let len: number = diff.length;
+      this.context2D.save();
+      this.context2D.translate(start.x, start.y);
+      this.context2D.rotate(angle);
+      this.drawVec(
+        len,
+        arrowLen,
+        beginText,
+        endText,
+        lineWidth,
+        isLineDash,
+        showInfo,
+        alpha
+      );
+      this.context2D.restore();
+    }
+    return angle;
+  }
+
+  public drawVecTest() {
+    let start = Vec2.create(200, 100);
+    let end0 = Vec2.create(400, 100);
+    let end1 = Vec2.create(400, 300);
+
+    const a = this.drawVecFromLine(start, end0);
+    const b = this.drawVecFromLine(
+      start,
+      end1,
+      10,
+      "a",
+      "b",
+      3,
+      false,
+      true,
+      true
+    );
+    console.log(a, b);
+    // this.drawVec
+  }
+
+  public lineStart: Vec2 = Vec2.create(150, 150);
+  public lineEnd: Vec2 = Vec2.create(400, 300);
+  public closePt: Vec2 = Vec2.create();
+  private _hitted: boolean = false;
+
+  public drawMouseLineProjection(): void {
+    this._isDrawMouseLine = true;
+    this.clearRect();
+    if (this.context2D != null) {
+      if (this._hitted === false) {
+        this.drawVecFromLine(
+          this.lineStart,
+          this.lineEnd,
+          10,
+          this.lineStart.toString(),
+          this.lineEnd.toString(),
+          1,
+          false,
+          true
+        );
+      } else {
+        let angle: number = 0;
+        let mousePt: Vec2 = Vec2.create(this._mouseX, this._mouseY);
+
+        this.context2D.save();
+        // 向量
+        angle = this.drawVecFromLine(
+          this.lineStart,
+          this.lineEnd,
+          10,
+          this.lineStart.toString(),
+          this.lineEnd.toString(),
+          3,
+          false,
+          true
+        );
+        // 投影位置画个圆
+        this.fillCircle(this.closePt.x, this.closePt.y, 5);
+        // 向量起点到鼠标位置画条线
+        this.drawVecFromLine(
+          this.lineStart,
+          mousePt,
+          10,
+          "",
+          "",
+          1,
+          true,
+          true,
+          false
+        );
+        // 鼠标位置到投影位置画条线
+        this.drawVecFromLine(
+          mousePt,
+          this.closePt,
+          10,
+          "",
+          "",
+          1,
+          true,
+          true,
+          false
+        );
+        this.context2D.restore();
+
+        this.context2D.save();
+        this.context2D.translate(this.closePt.x, this.closePt.y);
+        this.context2D.rotate(angle);
+        this.drawCoordInfo(
+          "[" +
+            this.closePt.x.toFixed(2) +
+            "  ,  " +
+            this.closePt.y.toFixed(2) +
+            " ]",
+          0,
+          0
+        );
+        this.context2D.restore();
+        angle = Vec2.getAngle(
+          Vec2.difference(this.lineEnd, this.lineStart),
+          Vec2.difference(mousePt, this.lineStart),
+          false
+        );
+        this.drawCoordInfo(
+          angle.toFixed(2),
+          this.lineStart.x + 10,
+          this.lineStart.y + 10
+        );
+      }
+    }
   }
 }

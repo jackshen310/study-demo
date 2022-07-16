@@ -62,6 +62,24 @@ const CanvasApplication = () => {
           editor?.drawTank();
         },
         text: "坦克",
+      },
+      {
+        click: () => {
+          editor?.getOrietation();
+        },
+        text: "朝向",
+      },
+      {
+        click: () => {
+          editor?.drawVecTest();
+        },
+        text: "画向量",
+      },
+      {
+        click: () => {
+          editor?.drawMouseLineProjection();
+        },
+        text: "点到线距离",
       }
     );
     return btns.map((item, index) => (
