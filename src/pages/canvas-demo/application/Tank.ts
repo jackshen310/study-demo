@@ -2,14 +2,15 @@ import { CanvasKeyBoardEvent, CanvasMouseEvent } from "./event";
 import Math2D from "./math/math2d";
 import Editor from "./editor";
 import Vec2 from "./math/vec2";
+import mat2d from "./math/mat2d";
 
 export default class Tank {
   public width: number = 80;
   public height: number = 50;
   public pos = new Vec2(100, 100);
-  public scaleX: number = 1.0;
-  public scaleY: number = 1.0;
-  public tankRotation: number = 0;
+  public scale = new Vec2(1.0, 1.0);
+  public tankRotation = new mat2d();
+
   public turretRotation: number = 0;
   public initYAxis: boolean = false;
 
@@ -52,25 +53,39 @@ export default class Tank {
     this.target.y = y;
   }
 
+  //   private _lookAt(): void {
+  //     // 计算夹角
+  //     let diffX: number = this.targetX - this.x;
+  //     let diffY: number = this.targetY - this.y;
+  //     let radian = Math.atan2(diffY, diffX);
+  //     this.tankRotation = radian;
+  //   }
+
   private _lookAt(): void {
-    // 计算夹角
-    let diffX: number = this.targetX - this.x;
-    let diffY: number = this.targetY - this.y;
-    let radian = Math.atan2(diffY, diffX);
-    this.tankRotation = radian;
+    // 坦克与鼠标位置形成的方向变量
+    let v = Vec2.difference(this.target, this.pos);
+    v.normalize(); // 变为单位矩阵
+
+    // 从v向量到x轴的旋转矩阵
+    // this.tankRotation = mat2d.makeRotationFromVectors(v, Vec2.xAxis);
+    // // 求逆，从x轴需要旋转xxx才能到v向量
+    // this.tankRotation.onlyRotationMatrixInvert(); // 逆旋转矩阵
+
+    // 计算从x轴到v向量的旋转矩阵
+    this.tankRotation = mat2d.makeRotationFromVectors(Vec2.xAxis, v);
   }
 
-  private _moveTowardTo(intervalSec: number): void {
-    let diffX: number = this.targetX - this.x;
-    let diffY: number = this.targetY - this.y;
-    let currSpeed: number = this.linearSpeed * intervalSec;
-    console.time("update");
-    if (diffX * diffX + diffY * diffY > currSpeed * currSpeed) {
-      this.x = this.x + Math.cos(this.tankRotation) * currSpeed;
-      this.y = this.y + Math.sin(this.tankRotation) * currSpeed;
-    }
-    console.timeEnd("update");
-  }
+  //   private _moveTowardTo(intervalSec: number): void {
+  //     let diffX: number = this.targetX - this.x;
+  //     let diffY: number = this.targetY - this.y;
+  //     let currSpeed: number = this.linearSpeed * intervalSec;
+  //     console.time("update");
+  //     if (diffX * diffX + diffY * diffY > currSpeed * currSpeed) {
+  //       this.x = this.x + Math.cos(this.tankRotation) * currSpeed;
+  //       this.y = this.y + Math.sin(this.tankRotation) * currSpeed;
+  //     }
+  //     console.timeEnd("update");
+  //   }
   // 用向量计算代替三角函数计算，比三角函数计算的快
   private _moveTowardTo2(intervalSec: number): void {
     let dir = Vec2.difference(this.target, this.pos);
@@ -103,9 +118,10 @@ export default class Tank {
       return;
     }
     app.context2D.save();
-    app.context2D.translate(this.x, this.y);
-    app.context2D.rotate(this.tankRotation);
-    app.context2D.scale(this.scaleX, this.scaleY);
+    app.context2D.translate(this.pos.x, this.pos.y);
+    // app.context2D.rotate(this.tankRotation);
+    app.transform(this.tankRotation);
+    app.context2D.scale(this.scale.x, this.scale.y);
     app.context2D.save();
     app.context2D.fillStyle = "grey";
     app.context2D.beginPath();
@@ -164,99 +180,6 @@ export default class Tank {
       app.canvas.height * 0.5
     );
     // 中心点到鼠标点
-    app.strokeLine(this.x, this.y, this.targetX, this.targetY);
-    app.context2D.restore();
-  }
-
-  public draw2(app: Editor): void {
-    if (app.context2D === null) {
-      return;
-    }
-    app.context2D.save();
-    app.context2D.translate(this.x, this.y);
-    app.context2D.rotate(
-      this.initYAxis ? this.tankRotation - Math.PI * 0.5 : this.tankRotation
-    );
-    app.context2D.scale(this.scaleX, this.scaleY);
-    app.context2D.save();
-    app.context2D.fillStyle = "grey";
-    app.context2D.beginPath();
-    if (this.initYAxis) {
-      app.context2D.rect(
-        -this.height * 0.5,
-        -this.width * 0.5,
-        this.height,
-        this.width
-      );
-    } else {
-      app.context2D.rect(
-        -this.width * 0.5,
-        -this.height * 0.5,
-        this.width,
-        this.height
-      );
-    }
-    app.context2D.fill();
-    app.context2D.restore();
-    app.context2D.save();
-    app.context2D.rotate(this.turretRotation);
-    app.context2D.fillStyle = "red";
-    app.context2D.beginPath();
-    if (this.initYAxis) {
-      app.context2D.ellipse(0, 0, 10, 15, 0, 0, Math.PI * 2);
-    } else {
-      app.context2D.ellipse(0, 0, 15, 10, 0, 0, Math.PI * 2);
-    }
-    app.context2D.fill();
-    app.context2D.strokeStyle = "blue";
-    app.context2D.lineWidth = 5;
-    app.context2D.lineCap = "round";
-    app.context2D.beginPath();
-    app.context2D.moveTo(0, 0);
-    if (this.initYAxis) {
-      app.context2D.lineTo(0, this.gunLength);
-    } else {
-      app.context2D.lineTo(this.gunLength, 0);
-    }
-    app.context2D.stroke();
-    if (this.initYAxis) {
-      app.context2D.translate(0, this.gunLength);
-      app.context2D.translate(0, this.gunMuzzleRadius);
-    } else {
-      app.context2D.translate(this.gunLength, 0);
-      app.context2D.translate(this.gunMuzzleRadius, 0);
-    }
-    app.fillCircle(0, 0, 5, "black");
-    app.context2D.restore();
-    app.context2D.save();
-    if (this.initYAxis) {
-      app.context2D.translate(0, this.height * 0.5);
-    } else {
-      app.context2D.translate(this.width * 0.5, 0);
-    }
-    app.fillCircle(0, 0, 10, "green");
-    app.context2D.restore();
-
-    // 坐标系
-    if (this.showCoord) {
-      app.context2D.save();
-      app.context2D.lineWidth = 1;
-      app.context2D.lineCap = "butt";
-      app.strokeCoord(0, 0, this.width * 1.2, this.height * 1.2);
-      app.context2D.restore();
-    }
-    app.context2D.restore();
-
-    if (this.showLine === false) {
-      return;
-    }
-    app.context2D.save();
-    app.strokeLine(
-      this.x,
-      this.y,
-      app.canvas.width * 0.5,
-      app.canvas.height * 0.5
-    );
     app.strokeLine(this.x, this.y, this.targetX, this.targetY);
     app.context2D.restore();
   }

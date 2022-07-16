@@ -18,7 +18,9 @@ export default class mat2d {
   ) {
     this.values = new Float32Array([a, b, c, d, x, y]);
   }
-
+  /**
+   * 单位矩阵
+   */
   public identity(): void {
     this.values[0] = 1.0;
     this.values[1] = 0.0;
@@ -140,7 +142,12 @@ export default class mat2d {
       (src.values[1] * src.values[4] - src.values[0] * src.values[5]) * det;
     return true;
   }
-
+  /**
+   * 旋转矩阵
+   * @param radians
+   * @param result
+   * @returns
+   */
   public static makeRotation(
     radians: number,
     result: mat2d | null = null
@@ -156,14 +163,24 @@ export default class mat2d {
     result.values[5] = 0;
     return result;
   }
-
+  /**
+   * 旋转矩阵的逆
+   * @returns
+   */
   public onlyRotationMatrixInvert(): mat2d {
     let s: number = this.values[1];
     this.values[1] = this.values[2];
     this.values[2] = s;
     return this;
   }
-
+  /**
+   * 用单位向量构造旋转矩阵
+   * @param v1
+   * @param v2
+   * @param norm
+   * @param result
+   * @returns
+   */
   public static makeRotationFromVectors(
     v1: vec2,
     v2: vec2,
@@ -212,7 +229,13 @@ export default class mat2d {
     result.values[5] = 0;
     return result;
   }
-
+  /**
+   * 返回一个平移矩阵
+   * @param tx
+   * @param ty
+   * @param result
+   * @returns
+   */
   public static makeTranslation(
     tx: number,
     ty: number,
@@ -228,7 +251,13 @@ export default class mat2d {
     result.values[5] = ty;
     return result;
   }
-
+  /**
+   * 返回一个缩放矩阵
+   * @param sx
+   * @param sy
+   * @param result
+   * @returns
+   */
   public static makeScale(
     sx: number,
     sy: number,

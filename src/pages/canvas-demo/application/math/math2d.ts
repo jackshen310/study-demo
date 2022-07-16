@@ -372,6 +372,13 @@ export default class Math2D {
     return true;
   }
 
+  /**
+   * 矩阵与向量相乘
+   * @param mat
+   * @param pt
+   * @param result
+   * @returns
+   */
   public static transform(
     mat: mat2d,
     pt: vec2,

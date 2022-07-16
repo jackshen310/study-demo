@@ -163,7 +163,13 @@ export default class Vec2 {
     }
     return radian;
   }
-
+  /**
+   * 求cos(θ)的值 = a 点乘 b / ( ||a|| * ||b|| )
+   * @param a
+   * @param b
+   * @param norm
+   * @returns
+   */
   public static cosAngle(a: Vec2, b: Vec2, norm: boolean = false): number {
     if (norm === true) {
       a.normalize();
@@ -171,7 +177,13 @@ export default class Vec2 {
     }
     return Vec2.dotProduct(a, b);
   }
-
+  /**
+   * 求sin(θ)的值 = a 叉乘 b / ( ||a|| * ||b|| )
+   * @param a
+   * @param b
+   * @param norm
+   * @returns
+   */
   public static sinAngle(a: Vec2, b: Vec2, norm: boolean = false): number {
     if (norm === true) {
       a.normalize();

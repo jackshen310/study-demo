@@ -5,6 +5,7 @@ import Vec2 from "./math/vec2";
 import { Colors } from "./util";
 import Tank from "./Tank";
 import vec2 from "./math/vec2";
+import mat2d from "./math/mat2d";
 
 type TextAlign = "start" | "left" | "center" | "right" | "end";
 
@@ -312,7 +313,7 @@ export default class Editor extends Canvas2DApplication {
         "," +
         (this._mouseY - this.tank.y).toFixed(2) +
         "] 角度 : " +
-        Math2D.toDegree(this.tank.tankRotation).toFixed(2),
+        Math2D.toDegree(this.tank.tankRotation.getAngle()).toFixed(2),
       this._mouseX,
       this._mouseY
     );
@@ -726,5 +727,19 @@ export default class Editor extends Canvas2DApplication {
       );
       this.context2D.restore();
     }
+  }
+
+  public transform(mat: mat2d): void {
+    if (this.context2D === null) {
+      return;
+    }
+    this.context2D.transform(
+      mat.values[0],
+      mat.values[1],
+      mat.values[2],
+      mat.values[3],
+      mat.values[4],
+      mat.values[5]
+    );
   }
 }
