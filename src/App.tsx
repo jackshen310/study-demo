@@ -17,6 +17,7 @@ function App() {
         <Link to="/canvas-application">canvas 架构设计</Link>|{" "}
         <Link to="/canvas-grid">canvas大图加载</Link>
         <Link to="/redux-counter">Redux-Counter</Link>
+        <Link to="/webgl-basic">Webgl-basic</Link>
       </nav>
     </div>
   );

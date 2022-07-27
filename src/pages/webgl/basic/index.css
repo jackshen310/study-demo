@@ -1,0 +1,15 @@
+.basic {
+    display: flex
+}
+.basic .left {
+    width: 200px;
+}
+.basic .left button {
+   margin: 2px;
+}
+.basic .right {
+    width: auto;
+}
+.basic .right p {
+   text-align: center;
+}
