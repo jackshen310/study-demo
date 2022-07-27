@@ -9,6 +9,7 @@ import CanvasBasic from "./pages/canvas-demo/basic";
 import CanvasBox from "./pages/canvas-demo/box";
 import CanvasFabric from "./pages/canvas-demo/fabric/index";
 import CanvasApplication from "./pages/canvas-demo/application/index";
+import Counter from "./pages/redux/counter";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -22,6 +23,7 @@ root.render(
       <Route path="canvas-grid" element={<CanvasGrid />} />
       <Route path="canvas-fabricjs" element={<CanvasFabric />} />
       <Route path="canvas-application" element={<CanvasApplication />} />
+      <Route path="redux-counter" element={<Counter />} />
     </Routes>
   </BrowserRouter>
 );

@@ -107,6 +107,7 @@ export class Sprite2D implements ISprite {
 
   public draw(context: CanvasRenderingContext2D): void {
     if (this.isVisible) {
+      // 渲染状态进栈
       this.shape.beginDraw(this, this, context);
       if (this.renderEvent !== null) {
         this.renderEvent(this, context, EOrder.PREORDER);
@@ -115,6 +116,7 @@ export class Sprite2D implements ISprite {
       if (this.renderEvent !== null) {
         this.renderEvent(this, context, EOrder.POSTORDER);
       }
+      // 恢复渲染状态
       this.shape.endDraw(this, this, context);
     }
   }

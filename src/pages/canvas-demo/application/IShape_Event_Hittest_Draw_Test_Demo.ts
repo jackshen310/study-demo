@@ -134,6 +134,8 @@ export default class IShape_Event_Hittest_Draw_Test_Demo {
 
        this . _shapes . push ( SpriteFactory . createPolygon ( points2 ) ) ;
        */
+
+      
   }
 
   private mouseEventHandler(s: ISprite, evt: CanvasMouseEvent): void {
