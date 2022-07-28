@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 import { useEffect } from "react";
 import store from "./store";
-import { INCREMENT, DECREMENT } from "./store/types";
+import { decremented, incremented } from "./store/actions";
 
 const Counter = () => {
   const [count, setCount] = useState(0);
 
   const handleAdd = () => {
-    store.dispatch({ type: INCREMENT });
+    store.dispatch(incremented());
   };
   const handleDel = () => {
-    store.dispatch({ type: DECREMENT });
+    store.dispatch(decremented());
   };
 
   useEffect(() => {
