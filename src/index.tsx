@@ -11,6 +11,7 @@ import CanvasFabric from "./pages/canvas-demo/fabric/index";
 import CanvasApplication from "./pages/canvas-demo/application/index";
 import Counter from "./pages/redux/counter";
 import WebglBasic from "./pages/webgl/basic";
+import ThreeBasic from "./pages/webgl/threejs/index";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -26,6 +27,7 @@ root.render(
       <Route path="canvas-application" element={<CanvasApplication />} />
       <Route path="redux-counter" element={<Counter />} />
       <Route path="webgl-basic" element={<WebglBasic />} />
+      <Route path="three-basic" element={<ThreeBasic />} />
     </Routes>
   </BrowserRouter>
 );
