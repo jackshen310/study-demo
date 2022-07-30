@@ -1,11 +1,8 @@
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  decremented,
-  incrementByAmount,
-  incremented,
-  selectCount,
-} from "./slice";
+import store from "../store";
+import { logAndAdd } from "./slice";
+import { decremented, incremented, selectCount } from "./slice";
 
 const Counter = () => {
   const count = useSelector(selectCount);
@@ -25,7 +22,8 @@ const Counter = () => {
   };
 
   const handleAmount = () => {
-    dispatch(incrementByAmount(value));
+    // 暂时不用用dispatch hooks 后面再看
+    store.dispatch(logAndAdd(value));
   };
 
   return (

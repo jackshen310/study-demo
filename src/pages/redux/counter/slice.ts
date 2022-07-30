@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import store from "../store/index";
 
 const counterSlice = createSlice({
   name: "counter",
@@ -30,6 +31,16 @@ export const incrementAsync = (amount: number) => (dispatch: any) => {
   setTimeout(() => {
     dispatch(incrementByAmount(amount));
   }, 1000);
+};
+
+export const logAndAdd = (amount: number) => {
+  return (dispatch: any, getState: any) => {
+    const stateBefore = getState();
+    console.log(`Counter before: ${stateBefore.value}`);
+    dispatch(incrementByAmount(amount));
+    const stateAfter = getState();
+    console.log(`Counter after: ${stateAfter.value}`);
+  };
 };
 
 // The function below is called a selector and allows us to select a value from

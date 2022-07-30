@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { EditPostForm } from "./EditPostForm";
 import { PostAuthor } from "./PostAuthor";
 import { SinglePostPage } from "./SinglePostPage";
+import { TimeAgo } from "./TimeAgo";
 
 export const PostsList = () => {
   const [modal, contextHolder] = Modal.useModal();
@@ -25,6 +26,7 @@ export const PostsList = () => {
       <h3>{post.title}</h3>
       <p className="post-content">{post.content.substring(0, 100)}</p>
       <PostAuthor {...post} />
+      <TimeAgo timestamp={post.date} />
       <button
         onClick={() => {
           openDetail(post.id);

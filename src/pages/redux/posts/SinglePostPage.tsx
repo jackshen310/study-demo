@@ -1,6 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { PostAuthor } from "./PostAuthor";
+import { TimeAgo } from "./TimeAgo";
 
 type Props = {
   postId: String;
@@ -28,6 +29,7 @@ export const SinglePostPage = (props: Props) => {
         <h2>{post.title}</h2>
         <p className="post-content">{post.content}</p>
         <PostAuthor {...post} />
+        <TimeAgo timestamp={post.date} />
       </article>
     </section>
   );
