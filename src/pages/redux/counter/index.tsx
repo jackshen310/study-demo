@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useEffect } from "react";
-import store from "./store";
-import { decremented, incremented } from "./store/actions";
+import store from "../store";
+import { decremented, incremented } from "./slice";
 
 const Counter = () => {
   const [count, setCount] = useState(0);
@@ -16,7 +16,7 @@ const Counter = () => {
   useEffect(() => {
     store.subscribe(() => {
       console.log(store.getState());
-      setCount(store.getState().value);
+      setCount(store.getState().counter.value);
     });
   }, []);
   return (
