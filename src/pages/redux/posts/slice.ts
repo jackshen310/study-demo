@@ -1,23 +1,40 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, nanoid } from "@reduxjs/toolkit";
 
 const initialState = [
-  { id: "1", title: "First Post!", content: "Hello!" },
-  { id: "2", title: "Second Post", content: "More text" },
+  { id: "1", title: "First Post!", content: "Hello!", userId: "0" },
+  { id: "2", title: "Second Post", content: "More text", userId: "1" },
 ];
 
 const postsSlice = createSlice({
   name: "posts",
-  initialState,
+  initialState: JSON.parse(JSON.stringify(initialState)),
   reducers: {
-    postAdded(state, action) {
-      state.push(action.payload);
+    // 自定义payload
+    postAdded: {
+      reducer(state, action) {
+        state.push(action.payload);
+      },
+      prepare(title, content, userId) {
+        return {
+          payload: {
+            id: nanoid(),
+            title,
+            content,
+            userId: userId,
+          },
+          type: "posts/postAdded",
+          meta: "",
+          error: "",
+        };
+      },
     },
     postUpdated(state, action) {
-      const { id, title, content } = action.payload;
-      const existingPost = state.find((post) => post.id === id);
+      const { id, title, content, userId } = action.payload;
+      const existingPost = state.find((post: any) => post.id === id);
       if (existingPost) {
         existingPost.title = title;
         existingPost.content = content;
+        existingPost.userId = userId;
       }
     },
   },

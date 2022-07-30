@@ -1,5 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
+import { PostAuthor } from "./PostAuthor";
 
 type Props = {
   postId: String;
@@ -26,6 +27,7 @@ export const SinglePostPage = (props: Props) => {
       <article className="post">
         <h2>{post.title}</h2>
         <p className="post-content">{post.content}</p>
+        <PostAuthor {...post} />
       </article>
     </section>
   );

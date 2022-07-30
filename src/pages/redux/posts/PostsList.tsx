@@ -2,6 +2,7 @@ import { Modal } from "antd";
 import React, { useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { EditPostForm } from "./EditPostForm";
+import { PostAuthor } from "./PostAuthor";
 import { SinglePostPage } from "./SinglePostPage";
 
 export const PostsList = () => {
@@ -19,11 +20,11 @@ export const PostsList = () => {
     curPostId.current = postId;
     setIsShowEdit(true);
   };
-
   const renderedPosts = posts.map((post) => (
     <article className="post-excerpt" key={post.id}>
       <h3>{post.title}</h3>
       <p className="post-content">{post.content.substring(0, 100)}</p>
+      <PostAuthor {...post} />
       <button
         onClick={() => {
           openDetail(post.id);
@@ -53,6 +54,7 @@ export const PostsList = () => {
           setIsShowEdit(false);
         }}
         visible={isShowEdit}
+        destroyOnClose={true}
       >
         <EditPostForm
           postId={curPostId.current}

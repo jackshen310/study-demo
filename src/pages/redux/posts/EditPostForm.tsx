@@ -9,9 +9,11 @@ export const EditPostForm = (props: { postId: string; onOk: Function }) => {
   const post = useSelector<any, any>((state) =>
     state.posts.find((post: any) => post.id === postId)
   );
+  const users = useSelector<any, any>((state) => state.users);
 
   const [title, setTitle] = useState(post.title);
   const [content, setContent] = useState(post.content);
+  const [userId, setUserId] = useState(post.userId);
 
   const dispatch = useDispatch();
 
@@ -20,9 +22,18 @@ export const EditPostForm = (props: { postId: string; onOk: Function }) => {
   const onContentChanged = (e: ChangeEvent<HTMLTextAreaElement>) =>
     setContent(e.target.value);
 
+  const onAuthorChanged = (e: ChangeEvent<any>) => setUserId(e.target.value);
+
+  const canSave = Boolean(title) && Boolean(content) && Boolean(userId);
+
+  const usersOptions = users.map((user: any) => (
+    <option key={user.id} value={user.id}>
+      {user.name}
+    </option>
+  ));
   const onSavePostClicked = () => {
     if (title && content) {
-      dispatch(postUpdated({ id: postId, title, content }));
+      dispatch(postUpdated({ id: postId, title, content, userId }));
       props.onOk();
     }
   };
@@ -39,6 +50,11 @@ export const EditPostForm = (props: { postId: string; onOk: Function }) => {
           value={title}
           onChange={onTitleChanged}
         />
+        <label htmlFor="postAuthor">Author:</label>
+        <select id="postAuthor" value={userId} onChange={onAuthorChanged}>
+          <option value=""></option>
+          {usersOptions}
+        </select>
         <label htmlFor="postContent">内容：</label>
         <textarea
           id="postContent"
@@ -47,7 +63,7 @@ export const EditPostForm = (props: { postId: string; onOk: Function }) => {
           onChange={onContentChanged}
         />
       </form>
-      <button type="button" onClick={onSavePostClicked}>
+      <button type="button" disabled={!canSave} onClick={onSavePostClicked}>
         保存帖子
       </button>
     </section>
