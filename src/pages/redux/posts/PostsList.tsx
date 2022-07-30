@@ -7,6 +7,7 @@ import { PostAuthor } from "./PostAuthor";
 import { SinglePostPage } from "./SinglePostPage";
 import { fetchPosts, selectAllPosts } from "./slice";
 import { TimeAgo } from "./TimeAgo";
+import { fetchUsers } from "../users/slice";
 
 export const PostsList = () => {
   const [modal, contextHolder] = Modal.useModal();
@@ -22,6 +23,7 @@ export const PostsList = () => {
   }, [postStatus]);
 
   useEffect(() => {
+    store.dispatch(fetchUsers());
     store.dispatch(fetchPosts());
   }, []);
 

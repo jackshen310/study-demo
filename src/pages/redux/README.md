@@ -95,3 +95,37 @@ console.log(currentValue)
 * 发现数据被更新的每个组件都强制使用新数据重新渲染，紧接着更新网页
 
 ![](https://cn.redux.js.org/assets/images/ReduxDataFlowDiagram-49fa8c3968371d9ef6f2a1486bd40a26.gif)
+
+#FAQ
+现在你可能想知道，“我是否总是需要将我所有应用程序的状态放入 Redux store？”
+答案是 不。整个应用程序所需的全局状态应该放在 Redux store 中。而只在一个地方用到的状态应该放到组件的 state。
+在 React + Redux 应用中，你的全局状态应该放在 Redux store 中，你的本地状态应该保留在 React 组件中。(一个状态，如果在另一个组件/模块使用，那么它应该放在Redux).
+
+如果您不确定该放在哪里，这里有一些常用的经验法则，用于确定应该将哪种数据放入 Redux：
+* 应用程序的其他部分是否关心这些数据？
+* 您是否需要能够基于这些原始数据创建进一步的派生数据？
+* 是否使用相同的数据来驱动多个组件？
+* 能够将这种状态恢复到给定的时间点（即时间旅行调试）对您是否有价值？
+* 是否要缓存数据（即，如果数据已经存在，则使用它的状态而不是重新请求它）？
+* 您是否希望在热重载 UI 组件（交换时可能会丢失其内部状态）时保持此数据一致？
+
+表单数据是否放入Redux Store？
+这也是一般如何在 Redux 中考虑表单的一个很好的例子。 大多数表单的 state 不应该保存在 Redux 中。 相反，在编辑表单的时候把数据存到表单组件中，当用户提交表单的时候再 dispatch action 来更新 store。
+
+# redux-thunk
+![](https://cn.redux.js.org/assets/images/ReduxAsyncDataFlowDiagram-d97ff38a0f4da0f327163170ccc13e80.gif)
+
+* 可以编写可复用的“selector 选择器”函数来封装从 Redux 状态中读取数据的逻辑
+  * 选择器是一种函数，它接收 Redux state 作为参数，并返回一些数据
+* Redux 使用叫做“中间件”这样的插件模式来开发异步逻辑
+  * 官方的处理异步中间件叫 redux-thunk，包含在 Redux Toolkit 中
+  * Thunk 函数接收 dispatch 和getState 作为参数，并且可以在异步逻辑中使用它们
+* 您可以 dispatch 其他 action 来帮助跟踪 API 调用的加载状态
+  * 典型的模式是在调用之前 dispatch 一个 "pending" 的 action，然后是包含数据的 “sucdess” 或包含错误的 “failure” action
+  * 加载状态通常应该使用枚举类型，如 'idle' | 'loading' | 'succeeded' | 'failed'
+* Redux Toolkit 有一个 createAsyncThunk API 可以为你 dispatch 这些 action
+  * createAsyncThunk 接受一个 “payload creator” 回调函数，它应该返回一个 Promise，并自动生成 pending/fulfilled/rejected action 类型
+  * 像 fetchPosts 这样生成的 action creator 根据你返回的 Promise dispatch 这些 action
+  * 可以使用 extraReducers 字段在 createSlice 中监听这些 action，并根据这些 action 更新 reducer 中的状态。
+  * action creator 可用于自动填充 extraReducers 对象的键，以便切片知道要监听的 action。
+  * Thunk 可以返回 promise。 具体对于createAsyncThunk，你可以await dispatch(someThunk()).unwrap()来处理组件级别的请求成功或失败。

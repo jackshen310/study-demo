@@ -54,6 +54,10 @@ const postsSlice = createSlice({
       .addCase(fetchPosts.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message;
+      })
+      .addCase(addNewPost.fulfilled, (state, action) => {
+        // We can directly add the new post object to our posts array
+        state.posts.push(action.payload);
       });
   },
 });
@@ -81,5 +85,21 @@ export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
     }, 500);
   });
 });
+
+export const addNewPost = createAsyncThunk(
+  "posts/addNewPost",
+  // The payload creator receives the partial `{title, content, user}` object
+  async (initialPost: object) => {
+    return new Promise<any>((resolve, reject) => {
+      setTimeout(() => {
+        resolve({
+          ...initialPost,
+          id: nanoid(),
+          date: new Date().toISOString(),
+        });
+      }, 2000);
+    });
+  }
+);
 
 export default postsSlice.reducer;

@@ -1,7 +1,8 @@
 import { nanoid } from "@reduxjs/toolkit";
 import React, { ChangeEvent, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { postAdded } from "./slice";
+import store from "../store";
+import { postAdded, addNewPost } from "./slice";
 
 export const AddPostForm = (props: { onOk: Function }) => {
   const [title, setTitle] = useState("");
@@ -11,14 +12,25 @@ export const AddPostForm = (props: { onOk: Function }) => {
   const users = useSelector<any, any>((state) => state.users);
   const dispatch = useDispatch();
 
-  const onSavePostClicked = () => {
+  const onSavePostClicked = async () => {
     if (title && content) {
-      dispatch(postAdded(title, content, userId));
+      try {
+        /**
+         *  Redux Toolkit 向返回的 Promise 添加了一个 .unwrap() 函数，
+         * 它将返回一个新的 Promise，
+         * 这个 Promise 在 fulfilled 状态时返回实际的 action.payload 值，
+         * 或者在 “rejected” 状态下抛出错误。
+         * 这让我们可以使用正常的“try/catch”逻辑处理组件中的成功和失败。
+         */
+        await store.dispatch(addNewPost({ title, content, userId })).unwrap();
 
-      setTitle("");
-      setContent("");
+        setTitle("");
+        setContent("");
 
-      props.onOk();
+        props.onOk();
+      } catch (e) {
+        console.log("error", e);
+      }
     }
   };
 
