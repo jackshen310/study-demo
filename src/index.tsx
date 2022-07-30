@@ -12,6 +12,7 @@ import CanvasApplication from "./pages/canvas-demo/application/index";
 import WebglBasic from "./pages/webgl/basic";
 import ThreeBasic from "./pages/webgl/threejs/index";
 import ReduxDemo from "./pages/redux";
+import "antd/dist/antd.css";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
