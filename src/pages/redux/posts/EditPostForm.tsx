@@ -1,14 +1,13 @@
 import React, { ChangeEvent, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { postUpdated } from "./slice";
+import { postUpdated, selectPostById } from "./slice";
 
 export const EditPostForm = (props: { postId: string; onOk: Function }) => {
   const { postId } = props;
 
-  const post = useSelector<any, any>((state) =>
-    state.posts.find((post: any) => post.id === postId)
-  );
+  const post = useSelector((state) => selectPostById(state, postId));
+
   const users = useSelector<any, any>((state) => state.users);
 
   const [title, setTitle] = useState(post.title);

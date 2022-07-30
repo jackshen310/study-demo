@@ -1,22 +1,10 @@
-import { createSlice, nanoid } from "@reduxjs/toolkit";
-import { sub } from "date-fns";
+import { createAsyncThunk, createSlice, nanoid } from "@reduxjs/toolkit";
 
-const initialState = [
-  {
-    id: "1",
-    title: "First Post!",
-    content: "Hello!",
-    userId: "0",
-    date: sub(new Date(), { minutes: 10 }).toISOString(),
-  },
-  {
-    id: "2",
-    title: "Second Post",
-    content: "More text",
-    userId: "1",
-    date: sub(new Date(), { minutes: 5 }).toISOString(),
-  },
-];
+const initialState = {
+  posts: [],
+  status: "idle",
+  error: null,
+};
 
 const postsSlice = createSlice({
   name: "posts",
@@ -25,7 +13,7 @@ const postsSlice = createSlice({
     // 自定义payload
     postAdded: {
       reducer(state, action) {
-        state.push(action.payload);
+        state.posts.push(action.payload);
       },
       prepare(title, content, userId) {
         return {
@@ -44,7 +32,7 @@ const postsSlice = createSlice({
     },
     postUpdated(state, action) {
       const { id, title, content, userId } = action.payload;
-      const existingPost = state.find((post: any) => post.id === id);
+      const existingPost = state.posts.find((post: any) => post.id === id);
       if (existingPost) {
         existingPost.title = title;
         existingPost.content = content;
@@ -53,8 +41,45 @@ const postsSlice = createSlice({
       }
     },
   },
+  extraReducers(builder) {
+    builder
+      .addCase(fetchPosts.pending, (state, action) => {
+        state.status = "loading";
+      })
+      .addCase(fetchPosts.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        // Add any fetched posts to the array
+        state.posts = action.payload;
+      })
+      .addCase(fetchPosts.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message;
+      });
+  },
 });
 
+// 编写选择器，这只是一种简便写法，你也可以直接在组件使用useSelector
+// 建议开始时不使用任何选择器，稍后当您发现自己在应用程序代码的许多部分中查找相同值时添加一些选择器。
+export const selectAllPosts = (state: any) => state.posts.posts;
+
+export const selectPostById = (state: any, postId: string) =>
+  state.posts.posts.find((post: { id: string }) => post.id === postId);
+
 export const { postAdded, postUpdated } = postsSlice.actions;
+
+export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
+  return new Promise<any>((resolve) => {
+    setTimeout(() => {
+      resolve([
+        {
+          id: "1",
+          title: "1111",
+          content: "111",
+          userId: "1",
+        },
+      ]);
+    }, 500);
+  });
+});
 
 export default postsSlice.reducer;

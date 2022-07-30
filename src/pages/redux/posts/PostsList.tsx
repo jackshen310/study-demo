@@ -1,17 +1,29 @@
 import { Modal } from "antd";
-import React, { useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect, useRef, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import store from "../store";
 import { EditPostForm } from "./EditPostForm";
 import { PostAuthor } from "./PostAuthor";
 import { SinglePostPage } from "./SinglePostPage";
+import { fetchPosts, selectAllPosts } from "./slice";
 import { TimeAgo } from "./TimeAgo";
 
 export const PostsList = () => {
   const [modal, contextHolder] = Modal.useModal();
   const [isShowEdit, setIsShowEdit] = useState(false);
   let curPostId = useRef("");
+  const dispatch = useDispatch();
 
-  const posts = useSelector<any, any[]>((state) => state.posts);
+  const posts = useSelector(selectAllPosts);
+  const postStatus = useSelector((state: any) => state.posts.status);
+
+  useEffect(() => {
+    console.log("postStatus", postStatus);
+  }, [postStatus]);
+
+  useEffect(() => {
+    store.dispatch(fetchPosts());
+  }, []);
 
   const openDetail = (id: string) => {
     modal.info({ title: "详情", content: <SinglePostPage postId={id} /> });
@@ -21,7 +33,7 @@ export const PostsList = () => {
     curPostId.current = postId;
     setIsShowEdit(true);
   };
-  const renderedPosts = posts.map((post) => (
+  const renderedPosts = posts.map((post: any) => (
     <article className="post-excerpt" key={post.id}>
       <h3>{post.title}</h3>
       <p className="post-content">{post.content.substring(0, 100)}</p>
