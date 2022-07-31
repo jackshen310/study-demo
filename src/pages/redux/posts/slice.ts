@@ -1,4 +1,10 @@
-import { createAsyncThunk, createSlice, nanoid } from "@reduxjs/toolkit";
+import {
+  createAsyncThunk,
+  createSelector,
+  createSlice,
+  nanoid,
+} from "@reduxjs/toolkit";
+import { client } from "../store/client";
 
 const initialState = {
   posts: [],
@@ -72,34 +78,24 @@ export const selectPostById = (state: any, postId: string) =>
 export const { postAdded, postUpdated } = postsSlice.actions;
 
 export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
-  return new Promise<any>((resolve) => {
-    setTimeout(() => {
-      resolve([
-        {
-          id: "1",
-          title: "1111",
-          content: "111",
-          userId: "1",
-        },
-      ]);
-    }, 500);
-  });
+  const response = await client.get("/api/fakeApi/posts");
+  debugger;
+  return response.data.data;
 });
 
 export const addNewPost = createAsyncThunk(
   "posts/addNewPost",
   // The payload creator receives the partial `{title, content, user}` object
   async (initialPost: object) => {
-    return new Promise<any>((resolve, reject) => {
-      setTimeout(() => {
-        resolve({
-          ...initialPost,
-          id: nanoid(),
-          date: new Date().toISOString(),
-        });
-      }, 2000);
-    });
+    console.log("initialPost", initialPost);
+    const response = await client.post("/api/fakeApi/posts", initialPost);
+    return response.data.data;
   }
+);
+
+export const selectPostsByUser = createSelector(
+  [selectAllPosts, (state, userId) => userId],
+  (posts, userId) => posts.filter((post: any) => post.userId === userId)
 );
 
 export default postsSlice.reducer;

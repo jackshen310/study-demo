@@ -129,3 +129,39 @@ console.log(currentValue)
   * 可以使用 extraReducers 字段在 createSlice 中监听这些 action，并根据这些 action 更新 reducer 中的状态。
   * action creator 可用于自动填充 extraReducers 对象的键，以便切片知道要监听的 action。
   * Thunk 可以返回 promise。 具体对于createAsyncThunk，你可以await dispatch(someThunk()).unwrap()来处理组件级别的请求成功或失败。
+
+# 性能优化
+Reselect 是一个创建记忆化 selector 函数的库，并且是专门设计用来与 Redux 一起使用的。它有一个 createSelector 函数，可以创建记忆化的 selector，只有在输入发生变化时才会重新计算结果。Redux Toolkit 导出了 createSelector 函数 ，因此我们可以直接使用它。
+
+
+* 可用于优化性能的记忆化 selector 函数
+  * Redux Toolkit 重新导出了 Reselect 中的 createSelector 函数，该函数会生成记忆化的 selector
+  * 只有当输入 selector 返回新的值时，记忆 selector 才会重新计算结果
+  * 记忆化可以跳过昂贵的计算，并确保返回相同的结果引用
+* 可以使用多种方式来优化使用了 Redux 的 React 组件的渲染
+  * 避免在 useSelector 中创建新的对象/数组引用——这将导致不必要的重新渲染
+  * 可以传递记忆化的 selector 函数给useSelector来优化渲染
+  * useSelector 可以接受比较函数，例如 shallowEqual，而不是引用相等
+  * 组件可以包装在 React.memo() 中，仅在它们的 prop 发生变化时重新渲染
+  * 列表渲染可以通过让列表父组件仅读取每项的 ID 组成的数组、将 ID 传递给列表项子项并在子项中按 ID 检索项来实现优化
+
+# 范式化 State 结构
+“范式化 state”是指：
+* 我们 state 中的每个特定数据只有一个副本，不存在重复。
+* 已范式化的数据保存在查找表中，其中项目 ID 是键，项本身是值。
+* 也可能有一个特定项用于保存所有 ID 的数组。
+
+```js
+{
+  users: {
+    ids: ["user1", "user2", "user3"],
+    entities: {
+      "user1": {id: "user1", firstName, lastName},
+      "user2": {id: "user2", firstName, lastName},
+      "user3": {id: "user3", firstName, lastName},
+    }
+  }
+}
+```
+
+# RTK Query
