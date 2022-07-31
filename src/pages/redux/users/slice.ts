@@ -25,4 +25,9 @@ export const fetchUsers = createAsyncThunk("users/fetchUsers", async () => {
   });
 });
 
+export const selectAllUsers = (state: any) => state.users;
+
+export const selectUserById = (state: any, userId: string) =>
+  state.users.find((user: any) => user.id === userId);
+
 export default usersSlice.reducer;
