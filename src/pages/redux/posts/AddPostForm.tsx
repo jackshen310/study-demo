@@ -1,16 +1,16 @@
 import { nanoid } from "@reduxjs/toolkit";
 import React, { ChangeEvent, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import store from "../store";
-import { postAdded, addNewPost } from "./slice";
+import { useSelector } from "react-redux";
+import { useAddNewPostMutation } from "../store/apiSlice";
 
 export const AddPostForm = (props: { onOk: Function }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [userId, setUserId] = useState("");
 
+  const [addNewPost, { isLoading }] = useAddNewPostMutation();
+
   const users = useSelector<any, any>((state) => state.users);
-  const dispatch = useDispatch();
 
   const onSavePostClicked = async () => {
     if (title && content) {
@@ -22,7 +22,7 @@ export const AddPostForm = (props: { onOk: Function }) => {
          * 或者在 “rejected” 状态下抛出错误。
          * 这让我们可以使用正常的“try/catch”逻辑处理组件中的成功和失败。
          */
-        await store.dispatch(addNewPost({ title, content, userId })).unwrap();
+        await addNewPost({ title, content, user: userId }).unwrap();
 
         setTitle("");
         setContent("");

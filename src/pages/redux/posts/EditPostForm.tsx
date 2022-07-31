@@ -1,18 +1,27 @@
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
-import { postUpdated, selectPostById } from "./slice";
+import { useEditPostMutation, useGetPostQuery } from "../store/apiSlice";
 
 export const EditPostForm = (props: { postId: string; onOk: Function }) => {
   const { postId } = props;
 
-  const post = useSelector((state) => selectPostById(state, postId));
+  const { data } = useGetPostQuery(postId);
+  const post = data?.data;
+
+  const [updatePost, { isLoading }] = useEditPostMutation();
 
   const users = useSelector<any, any>((state) => state.users);
 
-  const [title, setTitle] = useState(post.title);
-  const [content, setContent] = useState(post.content);
-  const [userId, setUserId] = useState(post.userId);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [userId, setUserId] = useState("");
+
+  useEffect(() => {
+    if (!post) return;
+    setTitle(post.title);
+    setContent(post.content);
+    setUserId(post.userId);
+  }, [post]);
 
   const dispatch = useDispatch();
 
@@ -30,9 +39,10 @@ export const EditPostForm = (props: { postId: string; onOk: Function }) => {
       {user.name}
     </option>
   ));
-  const onSavePostClicked = () => {
+  const onSavePostClicked = async () => {
     if (title && content) {
-      dispatch(postUpdated({ id: postId, title, content, userId }));
+      // dispatch(postUpdated({ id: postId, title, content, userId }));
+      await updatePost({ id: postId, title, content });
       props.onOk();
     }
   };

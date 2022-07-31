@@ -42,23 +42,36 @@ app.use(
 );
 
 app.use(
-  route.put("/api/v1/users/:code", async (ctx, code) => {
-    const params = ctx.request.body;
-    const dao = new UserDao();
-    const data = await dao.getByCode(code);
+  route.get("/api/fakeApi/posts/:postId", async (ctx, postId) => {
+    const dao = new PostsDao();
+    const data = await dao.getById(postId);
     if (!data) {
       ctx.body = {
         code: 500,
-        msg: "用户编码不存在",
+        msg: "postId 不存在",
       };
     } else {
-      params.code = code;
-      await dao.update(params);
       ctx.body = {
         code: 200,
-        msg: "操作成功",
+        data,
       };
     }
+  })
+);
+
+app.use(
+  route.patch("/api/fakeApi/posts/:postId", async (ctx, postId) => {
+    const params = ctx.request.body;
+    const dao = new PostsDao();
+    const data = {
+      ...params,
+      id: postId,
+    };
+    await dao.update(data);
+    ctx.body = {
+      code: 200,
+      data,
+    };
   })
 );
 app.use(
