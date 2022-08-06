@@ -179,3 +179,8 @@ SUMMARY
 * Mutation endpoints allow updating data on the server
   * Mutation hooks return a "trigger" function that sends an update request, plus loading status
   * The trigger function returns a Promise that can be "unwrapped" and awaited
+
+
+React 和 Redux DevTools 的插件：
+React DevTools Extension: https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=en
+Redux DevTools Extension: https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en

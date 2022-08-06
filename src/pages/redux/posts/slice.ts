@@ -5,8 +5,21 @@ import {
   nanoid,
 } from "@reduxjs/toolkit";
 import { client } from "../store/client";
+import { RootState } from "../store/index";
 
-const initialState = {
+interface PostsState {
+  posts: {
+    id: string;
+    title: string;
+    content: string;
+    date: string;
+    userId: string;
+  }[];
+  status: string;
+  error: any;
+}
+
+const initialState: PostsState = {
   posts: [],
   status: "idle",
   error: null,
@@ -14,7 +27,7 @@ const initialState = {
 
 const postsSlice = createSlice({
   name: "posts",
-  initialState: JSON.parse(JSON.stringify(initialState)),
+  initialState: initialState,
   reducers: {
     // 自定义payload
     postAdded: {
@@ -38,7 +51,7 @@ const postsSlice = createSlice({
     },
     postUpdated(state, action) {
       const { id, title, content, userId } = action.payload;
-      const existingPost = state.posts.find((post: any) => post.id === id);
+      const existingPost = state.posts.find((post) => post.id === id);
       if (existingPost) {
         existingPost.title = title;
         existingPost.content = content;
@@ -70,16 +83,15 @@ const postsSlice = createSlice({
 
 // 编写选择器，这只是一种简便写法，你也可以直接在组件使用useSelector
 // 建议开始时不使用任何选择器，稍后当您发现自己在应用程序代码的许多部分中查找相同值时添加一些选择器。
-export const selectAllPosts = (state: any) => state.posts.posts;
+export const selectAllPosts = (state: RootState) => state.posts.posts;
 
-export const selectPostById = (state: any, postId: string) =>
-  state.posts.posts.find((post: { id: string }) => post.id === postId);
+export const selectPostById = (state: RootState, postId: string) =>
+  state.posts.posts.find((post) => post.id === postId);
 
 export const { postAdded, postUpdated } = postsSlice.actions;
 
 export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
   const response = await client.get("/api/fakeApi/posts");
-  debugger;
   return response.data.data;
 });
 
@@ -95,7 +107,7 @@ export const addNewPost = createAsyncThunk(
 
 export const selectPostsByUser = createSelector(
   [selectAllPosts, (state, userId) => userId],
-  (posts, userId) => posts.filter((post: any) => post.userId === userId)
+  (posts, userId) => posts.filter((post) => post.userId === userId)
 );
 
 export default postsSlice.reducer;
