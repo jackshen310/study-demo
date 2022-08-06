@@ -16,6 +16,7 @@ function App() {
         <Link to="/canvas-fabricjs">canvas FabricJs 工具库</Link>|{" "}
         <Link to="/canvas-application">canvas 架构设计</Link>|{" "}
         <Link to="/canvas-grid">canvas大图加载</Link>|{" "}
+        <Link to="/canvas-konva">canvas Konva</Link>|{" "}
         <Link to="/redux-counter">Redux-Counter</Link>|{" "}
         <Link to="/webgl-basic">Webgl-basic</Link>|{" "}
         <Link to="/three-basic">Three-basic</Link>

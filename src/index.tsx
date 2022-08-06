@@ -13,6 +13,7 @@ import WebglBasic from "./pages/webgl/basic";
 import ThreeBasic from "./pages/webgl/threejs/index";
 import ReduxDemo from "./pages/redux";
 import "antd/dist/antd.css";
+import CanvasKonva from "./pages/canvas-demo/konva";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -26,6 +27,7 @@ root.render(
       <Route path="canvas-grid" element={<CanvasGrid />} />
       <Route path="canvas-fabricjs" element={<CanvasFabric />} />
       <Route path="canvas-application" element={<CanvasApplication />} />
+      <Route path="canvas-konva" element={<CanvasKonva />} />
       <Route path="redux-counter" element={<ReduxDemo />} />
       <Route path="webgl-basic" element={<WebglBasic />} />
       <Route path="three-basic" element={<ThreeBasic />} />
