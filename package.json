@@ -5,6 +5,8 @@
   "dependencies": {
     "@koa/cors": "^3.3.0",
     "@reduxjs/toolkit": "^1.8.3",
+    "@tauri-apps/api": "^1.0.2",
+    "@tauri-apps/cli": "^1.0.5",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^13.5.0",
@@ -36,6 +38,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "dev": "npx tauri dev",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "dev-server": "nodemon --watch server server/index.js"
