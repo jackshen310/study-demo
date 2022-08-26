@@ -14,6 +14,7 @@ import ThreeBasic from "./pages/webgl/threejs/index";
 import ReduxDemo from "./pages/redux";
 import "antd/dist/antd.css";
 import CanvasKonva from "./pages/canvas-demo/konva";
+import RustDemo from "./pages/rust";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -31,6 +32,7 @@ root.render(
       <Route path="redux-counter" element={<ReduxDemo />} />
       <Route path="webgl-basic" element={<WebglBasic />} />
       <Route path="three-basic" element={<ThreeBasic />} />
+      <Route path="rust" element={<RustDemo />} />
     </Routes>
   </BrowserRouter>
 );
