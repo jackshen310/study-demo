@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import * as wasm from "wasm-game-of-life";
 // Import the WebAssembly memory at the top of the file.
 import { memory } from "wasm-game-of-life/wasm_bg.wasm";
+import FPS from "./fps";
 
 const CELL_SIZE = 5; // px
 const GRID_COLOR = "#CCCCCC";
@@ -35,7 +36,9 @@ const WasmDemo = () => {
 
     const ctx = canvas.getContext("2d")!;
 
+    const fps = new FPS();
     const renderLoop = () => {
+      fps.render(); //new
       universe.tick();
 
       drawGrid(ctx, width, height);
@@ -43,6 +46,24 @@ const WasmDemo = () => {
 
       requestAnimationFrame(renderLoop);
     };
+
+    canvas.addEventListener("click", (event) => {
+      const boundingRect = canvas.getBoundingClientRect();
+
+      const scaleX = canvas.width / boundingRect.width;
+      const scaleY = canvas.height / boundingRect.height;
+
+      const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
+      const canvasTop = (event.clientY - boundingRect.top) * scaleY;
+
+      const row = Math.min(Math.floor(canvasTop / (CELL_SIZE + 1)), height - 1);
+      const col = Math.min(Math.floor(canvasLeft / (CELL_SIZE + 1)), width - 1);
+
+      universe.toggle_cell(row, col);
+
+      drawGrid(ctx, width, height);
+      drawCells(ctx, width, height);
+    });
 
     renderLoop();
   }, [universe]);
@@ -113,6 +134,7 @@ const WasmDemo = () => {
   };
   return (
     <div>
+      <div id="fps"></div>
       <button onClick={onClick}>clickMe</button>
       <br />
       <canvas id="game-of-life-canvas"></canvas>

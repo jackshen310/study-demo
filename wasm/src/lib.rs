@@ -2,17 +2,42 @@ mod utils;
 
 extern crate fixedbitset;
 extern crate js_sys;
+extern crate web_sys;
 
 use crate::utils::set_panic_hook;
 use fixedbitset::FixedBitSet;
 use std::fmt;
 use wasm_bindgen::prelude::*;
+use web_sys::console;
+
+macro_rules! log {
+    ( $( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into());
+    }
+}
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
 #[cfg(feature = "wee_alloc")]
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
+pub struct Timer<'a> {
+    name: &'a str,
+}
+
+impl<'a> Timer<'a> {
+    pub fn new(name: &'a str) -> Timer<'a> {
+        console::time_with_label(name);
+        Timer { name }
+    }
+}
+
+impl<'a> Drop for Timer<'a> {
+    fn drop(&mut self) {
+        console::time_end_with_label(self.name);
+    }
+}
 
 #[wasm_bindgen]
 #[repr(u8)]
@@ -51,6 +76,7 @@ impl Universe {
         count
     }
     pub fn tick(&mut self) {
+        let _timer = Timer::new("Universe::tick");
         let mut next = self.cells.clone();
 
         for row in 0..self.height {
@@ -76,6 +102,14 @@ impl Universe {
                 //     (otherwise, _) => otherwise,
                 // };
 
+                // log!(
+                //     "cell[{}, {}] is initially {:?} and has {} live neighbors",
+                //     row,
+                //     col,
+                //     cell,
+                //     live_neighbors
+                // );
+
                 let next_cell = match (cell, live_neighbors) {
                     (true, x) if x < 2 => false,
                     (true, 2) | (true, 3) => true,
@@ -83,6 +117,8 @@ impl Universe {
                     (false, 3) => true,
                     (otherwise, _) => otherwise,
                 };
+                // log!("    it becomes {:?}", next_cell);
+
                 next.set(idx, next_cell);
 
                 // next[idx] = next_cell;
@@ -146,6 +182,42 @@ impl Universe {
     // 要将指向位开头的指针传递给 JavaScript，您可以将 转换FixedBitSet为切片，然后将切片转换为指针
     pub fn cells(&self) -> *const u32 {
         self.cells.as_slice().as_ptr()
+    }
+
+    // Set the width of the universe.
+    //
+    // Resets all cells to the dead state.
+    // pub fn set_width(&mut self, width: u32) {
+    //     self.width = width;
+    //     self.cells = (0..width * self.height).map(|_i| false).collect();
+    // }
+
+    // Set the height of the universe.
+    //
+    // Resets all cells to the dead state.
+    // pub fn set_height(&mut self, height: u32) {
+    //     self.height = height;
+    //     self.cells = (0..self.width * height).map(|_i| false).collect();
+    // }
+
+    // Get the dead and alive values of the entire universe.
+    // pub fn get_cells(&self) -> &[(u32, u32)] {
+    //     &self.cells
+    // }
+
+    // /// Set cells to be alive in a universe by passing the row and column
+    // /// of each cell as an array.
+    // pub fn set_cells(&mut self, cells: &[(u32, u32)]) {
+    //     for (row, col) in cells.iter().cloned() {
+    //         let idx = self.get_index(row, col);
+    //         self.cells[idx] = Cell::Alive;
+    //     }
+    // }
+
+    pub fn toggle_cell(&mut self, row: u32, column: u32) {
+        let idx = self.get_index(row, column);
+        let val = self.cells[idx];
+        self.cells.set(idx, if val { false } else { true })
     }
 }
 
