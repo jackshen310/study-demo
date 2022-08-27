@@ -3,6 +3,16 @@
 
 build wasm: `cd wasm && wasm-pack build`
 
+在设计 WebAssembly 和 JavaScript 之间的接口时，我们希望针对以下属性进行优化：
+
+最大限度地减少复制进出 WebAssembly 线性内存。 不必要的副本会带来不必要的开销。
+
+最小化序列化和反序列化。与副本类似，序列化和反序列化也会产生开销，并且通常也会产生复制。如果我们可以将不透明的句柄传递给数据结构——而不是在一侧对其进行序列化，将其复制到 WebAssembly 线性内存中的某个已知位置，然后在另一侧进行反序列化——我们通常可以减少很多开销。wasm_bindgen帮助我们定义和使用 JavaScriptObject或盒装 Rust 结构的不透明句柄。
+
+作为一般的经验法则，一个好的 JavaScript↔WebAssembly 接口设计通常是这样一种设计，其中大型、长寿命的数据结构被实现为 Rust 类型，这些类型存在于 WebAssembly 线性内存中，并作为不透明的句柄暴露给 JavaScript。JavaScript 调用导出的 WebAssembly 函数，这些函数采用这些不透明的句柄、转换它们的数据、执行繁重的计算、查询数据并最终返回一个小的、可复制的结果。通过只返回小的计算结果，我们避免了在 JavaScript 垃圾收集堆和 WebAssembly 线性内存之间来回复制和/或序列化所有内容。
+
+
+
 
 <div align="center">
 
