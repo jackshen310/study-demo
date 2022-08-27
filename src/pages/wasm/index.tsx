@@ -18,6 +18,9 @@ const WasmDemo = () => {
   };
 
   useEffect(() => {
+    if (!universe) {
+      return;
+    }
     // Construct the universe, and get its width and height.
     // const universe = wasm.Universe.new();
     const width = universe.width();
@@ -42,11 +45,17 @@ const WasmDemo = () => {
     };
 
     renderLoop();
-  }, []);
+  }, [universe]);
 
   const getIndex = (row: number, column: number, width: number) => {
     return row * width + column;
   };
+  const bitIsSet = (n: number, arr: Uint8Array) => {
+    const byte = Math.floor(n / 8);
+    const mask = 1 << n % 8;
+    return (arr[byte] & mask) === mask;
+  };
+
   const drawCells = (
     ctx: CanvasRenderingContext2D,
     width: number,
@@ -54,7 +63,7 @@ const WasmDemo = () => {
   ) => {
     const cellsPtr = universe.cells();
     // 使用webassembly内存，构造Unit8Array对象，这样cells直接指向wasm内存，js就无需创建内存了
-    const cells = new Uint8Array(memory.buffer, cellsPtr, width * height);
+    const cells = new Uint8Array(memory.buffer, cellsPtr, (width * height) / 8);
 
     ctx.beginPath();
 
@@ -62,8 +71,11 @@ const WasmDemo = () => {
       for (let col = 0; col < width; col++) {
         const idx = getIndex(row, col, width);
 
-        ctx.fillStyle =
-          cells[idx] === wasm.Cell.Dead ? DEAD_COLOR : ALIVE_COLOR;
+        // ctx.fillStyle =
+        //   cells[idx] === wasm.Cell.Dead ? DEAD_COLOR : ALIVE_COLOR;
+
+        // This is updated!
+        ctx.fillStyle = bitIsSet(idx, cells) ? ALIVE_COLOR : DEAD_COLOR;
 
         ctx.fillRect(
           col * (CELL_SIZE + 1) + 1,
