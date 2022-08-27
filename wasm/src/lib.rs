@@ -129,8 +129,8 @@ impl Universe {
     }
     pub fn new() -> Universe {
         set_panic_hook();
-        let width = 64;
-        let height = 64;
+        let width = 128;
+        let height = 128;
 
         // let cells = (0..width * height) // TODO 这种写法挺好的
         //     .map(|i| {

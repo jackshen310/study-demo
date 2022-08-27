@@ -88,15 +88,33 @@ const WasmDemo = () => {
 
     ctx.beginPath();
 
+    // for (let row = 0; row < height; row++) {
+    //   for (let col = 0; col < width; col++) {
+    //     const idx = getIndex(row, col, width);
+
+    //     // ctx.fillStyle =
+    //     //   cells[idx] === wasm.Cell.Dead ? DEAD_COLOR : ALIVE_COLOR;
+
+    //     // This is updated!
+    //     ctx.fillStyle = bitIsSet(idx, cells) ? ALIVE_COLOR : DEAD_COLOR;
+
+    //     ctx.fillRect(
+    //       col * (CELL_SIZE + 1) + 1,
+    //       row * (CELL_SIZE + 1) + 1,
+    //       CELL_SIZE,
+    //       CELL_SIZE
+    //     );
+    //   }
+    // }
+
+    // Alive cells.
+    ctx.fillStyle = ALIVE_COLOR;
     for (let row = 0; row < height; row++) {
       for (let col = 0; col < width; col++) {
         const idx = getIndex(row, col, width);
-
-        // ctx.fillStyle =
-        //   cells[idx] === wasm.Cell.Dead ? DEAD_COLOR : ALIVE_COLOR;
-
-        // This is updated!
-        ctx.fillStyle = bitIsSet(idx, cells) ? ALIVE_COLOR : DEAD_COLOR;
+        if (!bitIsSet(idx, cells)) {
+          continue;
+        }
 
         ctx.fillRect(
           col * (CELL_SIZE + 1) + 1,
@@ -107,6 +125,23 @@ const WasmDemo = () => {
       }
     }
 
+    // Dead cells.
+    ctx.fillStyle = DEAD_COLOR;
+    for (let row = 0; row < height; row++) {
+      for (let col = 0; col < width; col++) {
+        const idx = getIndex(row, col, width);
+        if (bitIsSet(idx, cells)) {
+          continue;
+        }
+
+        ctx.fillRect(
+          col * (CELL_SIZE + 1) + 1,
+          row * (CELL_SIZE + 1) + 1,
+          CELL_SIZE,
+          CELL_SIZE
+        );
+      }
+    }
     ctx.stroke();
   };
 
