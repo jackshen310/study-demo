@@ -12,6 +12,22 @@ macro_rules! log {
         web_sys::console::log_1(&format!( $( $t )* ).into());
     }
 }
+pub struct Timer<'a> {
+    name: &'a str,
+}
+
+impl<'a> Timer<'a> {
+    pub fn new(name: &'a str) -> Timer<'a> {
+        console::time_with_label(name);
+        Timer { name }
+    }
+}
+
+impl<'a> Drop for Timer<'a> {
+    fn drop(&mut self) {
+        console::time_end_with_label(self.name);
+    }
+}
 
 #[wasm_bindgen]
 pub struct MaskHelper {
@@ -43,15 +59,17 @@ impl MaskHelper {
     pub fn get_label_from_mask(&mut self, js_mask: &JsValue, color: &str, opacity: f32) {
         // let start = time();
         let mask: Mask = js_mask.into_serde().unwrap();
-        let mat = &mask.Mat;
+        let mat = mask.Mat;
         let mode = mask.Mode;
 
         let rgbaColor = colorRgba(color, opacity, &self.re);
 
         // rgba颜色值
-        let r = rgbaNum(&rgbaColor, 0, &self.re2) as u8;
-        let g = rgbaNum(&rgbaColor, 1, &self.re2) as u8;
-        let b = rgbaNum(&rgbaColor, 2, &self.re2) as u8;
+        let rgba = rgbaNum(&rgbaColor, &self.re2);
+        // !("rgba:{:?}", rgba);
+        let r = rgba[0] as u8;
+        let g = rgba[1] as u8;
+        let b = rgba[2] as u8;
         let a = 255;
         // timeEnd(start);
         let height = (mask.LT.Y - mask.RD.Y).abs() + 1;
@@ -61,27 +79,31 @@ impl MaskHelper {
         let mut data: Vec<u8> = (0..range * 4).map(|i| 0).collect();
         let mut continuityCode = Vec::new();
         if (mode == 2) {
-            // let start = time();
-            continuityCode = getContinuityCode(mat.to_vec(), range);
-            // timeEnd(start, "getContinuityCode");
+            let _timer = Timer::new("getContinuityCode");
+            continuityCode = getContinuityCode(&mat, range);
         }
 
-        let mat2 = mat.to_vec();
-        let mut idx = 0;
-        for i in 0..range {
-            let isOpacity = if mode == 1 {
-                getBitmap(i.try_into().unwrap(), &mat2)
-            } else {
-                continuityCode[i] == 0
-            };
-            if (!isOpacity) {
-                data[idx] = r;
-                data[idx + 1] = g;
-                data[idx + 2] = b;
-                data[idx + 3] = a;
+        // let mat2 = mat.to_vec();
+        {
+            let _timer = Timer::new("maskttt");
+            let mut idx = 0;
+
+            for i in 0..range {
+                let isOpacity = if mode == 1 {
+                    getBitmap(i, &mat)
+                } else {
+                    continuityCode[i] == 0
+                };
+                if (!isOpacity) {
+                    data[idx] = r;
+                    data[idx + 1] = g;
+                    data[idx + 2] = b;
+                    data[idx + 3] = a;
+                }
+                idx += 4;
             }
-            idx += 4;
         }
+
         // log!("len:{}", data.len());
 
         self.image_data = data;
@@ -92,14 +114,15 @@ impl MaskHelper {
     pub fn get_infer_from_mask(&mut self, js_mask: &JsValue, color: &str) {
         // let start = time();
         let mask: Mask = js_mask.into_serde().unwrap();
-        let mat = &mask.Mat;
+        let mat = mask.Mat;
         let mode = mask.Mode;
         let rgbaColor = colorRgba(color, 0.5, &self.re);
         // rgba颜色值
-        let r = rgbaNum(&rgbaColor, 0, &self.re2) as u8;
-        let g = rgbaNum(&rgbaColor, 1, &self.re2) as u8;
-        let b = rgbaNum(&rgbaColor, 2, &self.re2) as u8;
-        let a = (rgbaNum(&rgbaColor, 3, &self.re2) * 255.0) as u8;
+        let rgba = rgbaNum(&rgbaColor, &self.re2);
+        let r = rgba[0] as u8;
+        let g = rgba[1] as u8;
+        let b = rgba[2] as u8;
+        let a = (rgba[3] * 255.0) as u8;
 
         let height = (mask.LT.Y - mask.RD.Y).abs() + 1;
         let width = (mask.LT.X - mask.RD.X).abs() + 1;
@@ -109,14 +132,14 @@ impl MaskHelper {
         let mut continuityCode = Vec::new();
         if (mode == 2) {
             // let start = time();
-            continuityCode = getContinuityCode(mat.to_vec(), range);
+            continuityCode = getContinuityCode(&mat, range);
             // timeEnd(start, "getContinuityCode");
         }
-        let mat2 = mat.to_vec();
+        // let mat2 = mat.to_vec();
         let idx = 0;
         for i in 0..range {
             let isOpacity = if mode == 1 {
-                getBitmap(i.try_into().unwrap(), &mat2)
+                getBitmap(i.try_into().unwrap(), &mat)
             } else {
                 continuityCode[i] == 0
             };
@@ -218,13 +241,20 @@ fn colorRgba(sHex: &str, mut alpha: f32, RE: &Regex) -> String {
 }
 
 // 获取rgba里的数值(rgba:传入的rgba格式颜色值，index:想要获取第几位，有0、1、2、3)
-fn rgbaNum(rgba: &str, index: usize, RE: &Regex) -> f32 {
-    // println!("rgba:{},{}", rgba, index);
-    // let re = Regex::new(r"(\d(\.\d+)?)+").unwrap();
-    let caps = RE.captures_iter(rgba).nth(index).unwrap();
-    let val = caps.get(0).map_or("0", |m| m.as_str());
-    let num = val.to_string().parse::<f32>().unwrap();
-    return num;
+fn rgbaNum(rgba: &str, RE: &Regex) -> [f32; 4] {
+    let mut res: [f32; 4] = [0.0; 4];
+    let mut idx = 0;
+    for i in RE.captures_iter(rgba) {
+        if (idx == 4) {
+            break;
+        }
+        let val = i.get(0).map_or("0", |m| m.as_str());
+        let num = val.to_string().parse::<f32>().unwrap();
+        res[idx] = num;
+        // log!("index: {}", idx);
+        idx += 1
+    }
+    return res;
 }
 
 /**
@@ -233,14 +263,12 @@ fn rgbaNum(rgba: &str, index: usize, RE: &Regex) -> f32 {
  * @param {*} range mask面积
  * @returns 0 1数组，表示mask每一个像素点是否透明
  */
-fn getContinuityCode(mat: Vec<i64>, range: usize) -> Vec<u8> {
+fn getContinuityCode(mat: &Vec<i64>, range: usize) -> Vec<u8> {
     let mut array: Vec<u8> = Vec::with_capacity(range);
-    println!("getContinuityCode, {}", range);
     let mut start = 0;
     for i in 0..mat.len() {
         let val = if mat[i] < 0 { 0 } else { 1 };
         for j in start..(start + mat[i].abs()) {
-            // array[j as usize] = val;
             array.push(val);
         }
         start = start + mat[i].abs();
@@ -254,7 +282,7 @@ fn getContinuityCode(mat: Vec<i64>, range: usize) -> Vec<u8> {
  * @param {Array} mat bitmap数组
  * @returns
  */
-fn getBitmap(n: i32, mat: &Vec<i64>) -> bool {
+fn getBitmap(n: usize, mat: &Vec<i64>) -> bool {
     // n对应的元素 n / 32
     let row = n >> 5;
     // n对应的int中的位置，是 n mod 32
