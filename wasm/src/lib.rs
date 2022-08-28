@@ -1,3 +1,4 @@
+pub mod mask; // 引入mask.rs文件
 mod utils;
 
 extern crate fixedbitset;
@@ -233,9 +234,4 @@ impl fmt::Display for Universe {
 
         Ok(())
     }
-}
-
-#[wasm_bindgen]
-pub fn greet() {
-    // alert("Hello, wasm!");
 }

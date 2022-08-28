@@ -12,6 +12,7 @@ build wasm: `cd wasm && wasm-pack build`
 作为一般的经验法则，一个好的 JavaScript↔WebAssembly 接口设计通常是这样一种设计，其中大型、长寿命的数据结构被实现为 Rust 类型，这些类型存在于 WebAssembly 线性内存中，并作为不透明的句柄暴露给 JavaScript。JavaScript 调用导出的 WebAssembly 函数，这些函数采用这些不透明的句柄、转换它们的数据、执行繁重的计算、查询数据并最终返回一个小的、可复制的结果。通过只返回小的计算结果，我们避免了在 JavaScript 垃圾收集堆和 WebAssembly 线性内存之间来回复制和/或序列化所有内容。
 
 
+使用nightly： https://debugah.com/rust-encountered-errore0554-feature-may-not-be-used-on-the-stable-release-channel-switch-nightly-version-18060/
 
 
 <div align="center">
