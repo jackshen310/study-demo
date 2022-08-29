@@ -14,6 +14,8 @@ const MaskDemo = () => {
     if (!Array.isArray(label) || !Array.isArray(infer)) {
       return;
     }
+    helper.clear();
+
     console.time("mask");
     if (filter.includes("ANNOTATION")) {
       label.forEach((anno) => {
@@ -22,11 +24,13 @@ const MaskDemo = () => {
         if (!isMask) {
           return;
         }
-        helper.get_label_from_mask(mask, color, Number(opacity));
+        const { width, height, index } = helper.get_label_from_mask(
+          mask,
+          color,
+          Number(opacity)
+        );
 
-        const imageDataPtr = helper.image_data();
-        let width = helper.width();
-        let height = helper.height();
+        const imageDataPtr = helper.label_data(index);
         let array = new Uint8ClampedArray(
           memory.buffer,
           imageDataPtr,
@@ -36,17 +40,18 @@ const MaskDemo = () => {
       });
     }
     if (filter.includes("INFER")) {
-      infer.forEach((anno) => {
+      infer.forEach((anno: any) => {
         const { color, mask = {} } = anno;
         const isMask = Object.keys(mask || {}).length > 0;
         if (!isMask) {
           return;
         }
-        helper.get_infer_from_mask(mask, color);
+        const { width, height, index } = helper.get_infer_from_mask(
+          mask,
+          color
+        );
 
-        const imageDataPtr = helper.image_data();
-        let width = helper.width();
-        let height = helper.height();
+        const imageDataPtr = helper.infer_data(index);
         let array = new Uint8ClampedArray(
           memory.buffer,
           imageDataPtr,

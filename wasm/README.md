@@ -14,6 +14,8 @@ build wasm: `cd wasm && wasm-pack build`
 
 使用nightly： https://debugah.com/rust-encountered-errore0554-feature-may-not-be-used-on-the-stable-release-channel-switch-nightly-version-18060/
 
+执行bench：rustup run nightly cargo bench | tee before.txt   （但是在mac上无法分析）
+
 
 <div align="center">
 

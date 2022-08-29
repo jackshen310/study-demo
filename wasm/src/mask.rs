@@ -31,9 +31,8 @@ impl<'a> Drop for Timer<'a> {
 
 #[wasm_bindgen]
 pub struct MaskHelper {
-    image_data: Vec<u8>,
-    width: u32,
-    height: u32,
+    label_data_list: Vec<Vec<u8>>,
+    infer_data_list: Vec<Vec<u8>>,
     re: Regex,
     re2: Regex,
 }
@@ -45,18 +44,23 @@ impl MaskHelper {
         let re = Regex::new(r"^#([0-9a-fA-f]{3}|[0-9a-fA-f]{6})$").unwrap();
         let re2 = Regex::new(r"(\d(\.\d+)?)+").unwrap();
 
-        let image_data = Vec::new();
-        let width = 0;
-        let height = 0;
+        let label_data_list = Vec::new();
+        let infer_data_list = Vec::new();
+
         MaskHelper {
-            image_data,
+            label_data_list,
+            infer_data_list,
             re,
             re2,
-            width,
-            height,
         }
     }
-    pub fn get_label_from_mask(&mut self, js_mask: &JsValue, color: &str, opacity: f32) {
+
+    pub fn clear(&mut self) {
+        self.label_data_list = Vec::new();
+        self.infer_data_list = Vec::new();
+    }
+
+    pub fn get_label_from_mask(&mut self, js_mask: &JsValue, color: &str, opacity: f32) -> JsValue {
         // let start = time();
         let mask: Mask = js_mask.into_serde().unwrap();
         let mat = mask.Mat;
@@ -66,34 +70,36 @@ impl MaskHelper {
 
         // rgba颜色值
         let rgba = rgbaNum(&rgbaColor, &self.re2);
-        // !("rgba:{:?}", rgba);
         let r = rgba[0] as u8;
         let g = rgba[1] as u8;
         let b = rgba[2] as u8;
         let a = 255;
-        // timeEnd(start);
+
         let height = (mask.LT.Y - mask.RD.Y).abs() + 1;
         let width = (mask.LT.X - mask.RD.X).abs() + 1;
         let range = (height * width).try_into().unwrap();
-        // println!("len, {},{}, {}", width, height, range);
         let mut data: Vec<u8> = (0..range * 4).map(|i| 0).collect();
-        let mut continuityCode = Vec::new();
+
         if (mode == 2) {
-            let _timer = Timer::new("getContinuityCode");
-            continuityCode = getContinuityCode(&mat, range);
-        }
-
-        // let mat2 = mat.to_vec();
-        {
-            let _timer = Timer::new("maskttt");
+            // let _timer = Timer::new("mask mode is 2");
+            let mut start: usize = 0;
+            for i in 0..mat.len() {
+                let isOpacity = if mat[i] < 0 { true } else { false };
+                for j in start..(start + (mat[i].abs() as usize)) {
+                    if (!isOpacity) {
+                        data[j * 4] = r;
+                        data[j * 4 + 1] = g;
+                        data[j * 4 + 2] = b;
+                        data[j * 4 + 3] = a;
+                    }
+                }
+                start = start + (mat[i].abs() as usize);
+            }
+        } else {
+            let _timer = Timer::new("mask mode is 1");
             let mut idx = 0;
-
             for i in 0..range {
-                let isOpacity = if mode == 1 {
-                    getBitmap(i, &mat)
-                } else {
-                    continuityCode[i] == 0
-                };
+                let isOpacity = getBitmap(i, &mat);
                 if (!isOpacity) {
                     data[idx] = r;
                     data[idx + 1] = g;
@@ -103,20 +109,23 @@ impl MaskHelper {
                 idx += 4;
             }
         }
+        self.label_data_list.push(data);
 
-        // log!("len:{}", data.len());
+        let res = Response {
+            width,
+            height,
+            index: self.label_data_list.len() - 1,
+        };
 
-        self.image_data = data;
-        self.width = width as u32;
-        self.height = height as u32;
+        return JsValue::from_serde(&res).unwrap();
     }
 
-    pub fn get_infer_from_mask(&mut self, js_mask: &JsValue, color: &str) {
-        // let start = time();
+    pub fn get_infer_from_mask(&mut self, js_mask: &JsValue, color: &str) -> JsValue {
         let mask: Mask = js_mask.into_serde().unwrap();
         let mat = mask.Mat;
         let mode = mask.Mode;
         let rgbaColor = colorRgba(color, 0.5, &self.re);
+
         // rgba颜色值
         let rgba = rgbaNum(&rgbaColor, &self.re2);
         let r = rgba[0] as u8;
@@ -130,10 +139,8 @@ impl MaskHelper {
 
         let mut data: Vec<u8> = (0..range * 4).map(|i| 0).collect();
         let mut continuityCode = Vec::new();
-        if (mode == 2) {
-            // let start = time();
+        if mode == 2 {
             continuityCode = getContinuityCode(&mat, range);
-            // timeEnd(start, "getContinuityCode");
         }
         // let mat2 = mat.to_vec();
         let idx = 0;
@@ -159,24 +166,24 @@ impl MaskHelper {
             }
         }
 
-        self.image_data = data;
-        self.width = width as u32;
-        self.height = height as u32;
+        self.infer_data_list.push(data);
+
+        let res = Response {
+            width,
+            height,
+            index: self.infer_data_list.len() - 1,
+        };
+
+        return JsValue::from_serde(&res).unwrap();
     }
 
-    pub fn width(&self) -> u32 {
-        self.width
+    // 返回指向memory地址的指针
+    pub fn label_data(&self, index: usize) -> *const u8 {
+        self.label_data_list[index].as_ptr()
     }
 
-    pub fn height(&self) -> u32 {
-        self.height
-    }
-    pub fn image_data(&self) -> *const u8 {
-        self.image_data.as_ptr()
-    }
-
-    pub fn greet(&self) {
-        log!("hello world");
+    pub fn infer_data(&self, index: usize) -> *const u8 {
+        self.infer_data_list[index].as_ptr()
     }
 }
 
@@ -190,10 +197,8 @@ fn colorRgba(sHex: &str, mut alpha: f32, RE: &Regex) -> String {
     if (alpha.is_nan()) {
         alpha = 1.0;
     }
-    // println!("colorRgba, {}, {}", sHex, alpha);
 
     // 十六进制颜色值的正则表达式
-    // let re = Regex::new(r"^#([0-9a-fA-f]{3}|[0-9a-fA-f]{6})$").unwrap();
     /* 16进制颜色转为RGB格式 */
     let mut sColor = sHex.to_lowercase();
     // rgba(85,56,255,0.5)
@@ -209,18 +214,8 @@ fn colorRgba(sHex: &str, mut alpha: f32, RE: &Regex) -> String {
         let mut sColorChange: [i32; 4] = [0; 4];
 
         sColorChange[0] = i32::from_str_radix(&(sColor.get(1..3).unwrap()), 16).unwrap();
-
-        // let mut n = 1;
-        // while n < 7 {
-        //     let num = i64::from_str_radix(&(sColor.get(n..n + 2).unwrap_or("")), 16);
-        //     match num {
-        //         Ok(d) => {
-        //             sColorChange.push(d.to_string());
-        //         }
-        //         Err(e) => println!("Error: {}", e),
-        //     }
-        //     n += 2;
-        // }
+        sColorChange[1] = i32::from_str_radix(&(sColor.get(3..5).unwrap()), 16).unwrap();
+        sColorChange[2] = i32::from_str_radix(&(sColor.get(5..7).unwrap()), 16).unwrap();
 
         return "rgba(".to_string()
             + &sColorChange.map(|d| d.to_string()).join(",")
@@ -306,6 +301,7 @@ pub struct Mask {
 
 #[derive(serde::Deserialize, Serialize, Debug, Clone)]
 pub struct Response {
+    index: usize,
     width: i32,
     height: i32,
 }
