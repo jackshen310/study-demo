@@ -15,6 +15,7 @@ import ReduxDemo from "./pages/redux";
 import "antd/dist/antd.css";
 import CanvasKonva from "./pages/canvas-demo/konva";
 import RustDemo from "./pages/rust";
+import WasmDemo from "./pages/wasm/index";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -33,6 +34,7 @@ root.render(
       <Route path="webgl-basic" element={<WebglBasic />} />
       <Route path="three-basic" element={<ThreeBasic />} />
       <Route path="rust" element={<RustDemo />} />
+      <Route path="wasm" element={<WasmDemo />} />
     </Routes>
   </BrowserRouter>
 );
