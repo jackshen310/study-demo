@@ -29,6 +29,21 @@ impl<'a> Drop for Timer<'a> {
     }
 }
 
+#[derive(PartialEq, Debug, Clone)]
+enum MaskMode {
+    BITMAP = 1,
+    MAT = 2,
+}
+impl MaskMode {
+    fn value_of(mode: u8) -> MaskMode {
+        if mode == 1 {
+            MaskMode::BITMAP
+        } else {
+            MaskMode::MAT
+        }
+    }
+}
+
 #[wasm_bindgen]
 pub struct MaskHelper {
     label_data_list: Vec<Vec<u8>>,
@@ -64,7 +79,7 @@ impl MaskHelper {
         // let start = time();
         let mask: Mask = js_mask.into_serde().unwrap();
         let mat = mask.Mat;
-        let mode = mask.Mode;
+        let mode = MaskMode::value_of(mask.Mode);
 
         let rgbaColor = colorRgba(color, opacity, &self.re);
 
@@ -80,7 +95,7 @@ impl MaskHelper {
         let range = (height * width).try_into().unwrap();
         let mut data: Vec<u8> = (0..range * 4).map(|i| 0).collect();
 
-        if (mode == 2) {
+        if mode == MaskMode::MAT {
             // let _timer = Timer::new("mask mode is 2");
             let mut start: usize = 0;
             for i in 0..mat.len() {
@@ -123,7 +138,7 @@ impl MaskHelper {
     pub fn get_infer_from_mask(&mut self, js_mask: &JsValue, color: &str) -> JsValue {
         let mask: Mask = js_mask.into_serde().unwrap();
         let mat = mask.Mat;
-        let mode = mask.Mode;
+        let mode = MaskMode::value_of(mask.Mode);
         let rgbaColor = colorRgba(color, 0.5, &self.re);
 
         // rgba颜色值
@@ -138,31 +153,36 @@ impl MaskHelper {
         let range = (height * width).try_into().unwrap();
 
         let mut data: Vec<u8> = (0..range * 4).map(|i| 0).collect();
-        let mut continuityCode = Vec::new();
-        if mode == 2 {
-            continuityCode = getContinuityCode(&mat, range);
-        }
-        // let mat2 = mat.to_vec();
-        let idx = 0;
-        for i in 0..range {
-            let isOpacity = if mode == 1 {
-                getBitmap(i.try_into().unwrap(), &mat)
-            } else {
-                continuityCode[i] == 0
-            };
-            let widthIndex = ((i as i32 + 1) % width) - 1;
-            let heightIndex = ((i as i32 + 1) / width) - 1;
-            let mut isAddDot = false;
-            if (((widthIndex / 2) % 2 == 0 || ((widthIndex - 1) / 2) % 2 == 0)
-                && ((heightIndex / 2) % 2 == 0 || ((heightIndex - 1) / 2) % 2 == 0))
-            {
-                isAddDot = true;
+
+        if mode == MaskMode::MAT {
+            // let _timer = Timer::new("mask mode is 2");
+            let mut start: usize = 0;
+            for i in 0..mat.len() {
+                let isOpacity = if mat[i] < 0 { true } else { false };
+                let isAddDot = getIsAddDot(i as i32, width);
+                for j in start..(start + (mat[i].abs() as usize)) {
+                    if (!isOpacity) {
+                        data[j * 4] = r;
+                        data[j * 4 + 1] = g;
+                        data[j * 4 + 2] = b;
+                        data[j * 4 + 3] = if isAddDot { 255 } else { a };
+                    }
+                }
+                start = start + (mat[i].abs() as usize);
             }
-            if (!isOpacity) {
-                data[idx] = r;
-                data[idx + 1] = g;
-                data[idx + 2] = b;
-                data[idx + 3] = if isAddDot { 255 } else { a };
+        } else {
+            let _timer = Timer::new("mask mode is 1");
+            let mut idx = 0;
+            for i in 0..range {
+                let isOpacity = getBitmap(i, &mat);
+                let isAddDot = getIsAddDot(i as i32, width);
+                if (!isOpacity) {
+                    data[idx] = r;
+                    data[idx + 1] = g;
+                    data[idx + 2] = b;
+                    data[idx + 3] = if isAddDot { 255 } else { a };
+                }
+                idx += 4;
             }
         }
 
@@ -258,18 +278,18 @@ fn rgbaNum(rgba: &str, RE: &Regex) -> [f32; 4] {
  * @param {*} range mask面积
  * @returns 0 1数组，表示mask每一个像素点是否透明
  */
-fn getContinuityCode(mat: &Vec<i64>, range: usize) -> Vec<u8> {
-    let mut array: Vec<u8> = Vec::with_capacity(range);
-    let mut start = 0;
-    for i in 0..mat.len() {
-        let val = if mat[i] < 0 { 0 } else { 1 };
-        for j in start..(start + mat[i].abs()) {
-            array.push(val);
-        }
-        start = start + mat[i].abs();
-    }
-    return array;
-}
+// fn getContinuityCode(mat: &Vec<i64>, range: usize) -> Vec<u8> {
+//     let mut array: Vec<u8> = Vec::with_capacity(range);
+//     let mut start = 0;
+//     for i in 0..mat.len() {
+//         let val = if mat[i] < 0 { 0 } else { 1 };
+//         for j in start..(start + mat[i].abs()) {
+//             array.push(val);
+//         }
+//         start = start + mat[i].abs();
+//     }
+//     return array;
+// }
 
 /**
  * 解析bitmap
@@ -284,6 +304,19 @@ fn getBitmap(n: usize, mat: &Vec<i64>) -> bool {
     let index = n & 0x1f;
     let result = mat[row as usize] & (1 << index);
     return result == 0;
+}
+
+fn getIsAddDot(i: i32, width: i32) -> bool {
+    let mut isAddDot = false;
+    let widthIndex = ((i as i32 + 1) % width) - 1;
+    let heightIndex = ((i as i32 + 1) / width) - 1;
+    let mut isAddDot = false;
+    if (((widthIndex / 2) % 2 == 0 || ((widthIndex - 1) / 2) % 2 == 0)
+        && ((heightIndex / 2) % 2 == 0 || ((heightIndex - 1) / 2) % 2 == 0))
+    {
+        isAddDot = true;
+    }
+    isAddDot
 }
 
 #[derive(serde::Deserialize, Serialize, Debug, Clone)]
