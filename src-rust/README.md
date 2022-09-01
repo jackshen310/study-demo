@@ -14,3 +14,8 @@ $ ./hello
 Hello World!
 
 
+用Cargo 管理
+$ cargo new my-project # 初始化一个模块
+$ cargo build # 编译
+$ cargo run # 启动
+
