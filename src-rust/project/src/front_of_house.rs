@@ -1,6 +1,9 @@
 // 模块概念学习
 pub mod hosting {
     pub fn add_to_waitlist() {}
+    /**
+     * xx
+     */
     pub fn add_to_waitlist2() {}
 }
 
