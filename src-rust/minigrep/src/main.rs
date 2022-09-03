@@ -14,3 +14,9 @@ fn main() {
         process::exit(1);
     }
 }
+
+/// 将传入的数字加1
+/// xxx
+pub fn add_one(x: i32) -> i32 {
+    x + 1
+}

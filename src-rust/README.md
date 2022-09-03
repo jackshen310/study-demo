@@ -23,3 +23,6 @@ $ cargo run # 启动
 $ cargo new adder --lib  # 新增一个测试adder文件夹
 $ cargo test  # 执行测试
 
+文档
+$ cargo doc
+
