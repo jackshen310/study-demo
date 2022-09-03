@@ -12,4 +12,14 @@ fn main() {
     lib::test_create_file();
 
     lib::test_write_to_string().unwrap();
+
+    let v = vec![1, 2, 3, 4];
+    let max = lib::largest(&v);
+    println!("max: {}", max);
+
+    let v = vec!['a', 'b', 'c', 'd'];
+    let max = lib::largest(&v);
+    println!("max: {}", max);
+
+    lib::test_pair();
 }

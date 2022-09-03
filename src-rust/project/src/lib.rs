@@ -100,3 +100,91 @@ pub fn test_write_to_string02() -> Result<String, io::Error> {
 pub fn test_write_to_string03() -> Result<String, io::Error> {
     fs::read_to_string("./hello.txt")
 }
+
+pub fn largest<T: PartialOrd + Copy>(list: &[T]) -> T {
+    let mut max = list[0];
+    for &item in list.iter() {
+        if (max < item) {
+            max = item;
+        }
+    }
+    return max;
+}
+
+// trait 类似interfaces
+pub trait Summary {
+    fn summarize(&self) -> String;
+}
+
+pub struct NewsArticle {
+    pub headline: String,
+    pub location: String,
+    pub author: String,
+    pub content: String,
+}
+impl Summary for NewsArticle {
+    fn summarize(&self) -> String {
+        format!("{}, by {} ({})", self.headline, self.author, self.location)
+    }
+}
+pub struct Tweet {
+    pub username: String,
+    pub content: String,
+    pub reply: bool,
+    pub retweet: bool,
+}
+impl Summary for Tweet {
+    fn summarize(&self) -> String {
+        format!("{}: {}", self.username, self.content)
+    }
+}
+
+// 指定实现接口
+pub fn notify(item: impl Summary) {
+    println!("Breaking news! {}", item.summarize());
+}
+
+use std::fmt::Debug;
+use std::fmt::Display;
+pub struct Pair<T> {
+    x: T,
+    y: T,
+}
+impl<T> Pair<T> {
+    fn new(x: T, y: T) -> Self {
+        Self { x, y }
+    }
+}
+impl<T: Display + PartialOrd + Debug> Pair<T> {
+    fn cmp_display(&self) {
+        if self.x >= self.y {
+            println!("The largest member is x = {}", self.x);
+        } else {
+            println!("The largest member is y = {}", self.y);
+        }
+    }
+}
+
+pub fn test_pair() {
+    let p = Pair::new(1, 2);
+
+    p.cmp_display();
+}
+fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
+    if x.len() > y.len() {
+        x
+    } else {
+        y
+    }
+}
+
+struct ImportantExcerpt<'a> {
+    part: &'a str,
+}
+fn test_a() {
+    let novel = String::from("Call me Ishmael. Some years ago...");
+    let first_sentence = novel.split('.').next().expect("Could not find a '.'");
+    let i = ImportantExcerpt {
+        part: first_sentence,
+    };
+}
