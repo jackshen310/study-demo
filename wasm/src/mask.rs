@@ -307,7 +307,6 @@ fn getBitmap(n: usize, mat: &Vec<i64>) -> bool {
 }
 
 fn getIsAddDot(i: i32, width: i32) -> bool {
-    let mut isAddDot = false;
     let widthIndex = ((i as i32 + 1) % width) - 1;
     let heightIndex = ((i as i32 + 1) / width) - 1;
     let mut isAddDot = false;

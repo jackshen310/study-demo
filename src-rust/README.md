@@ -19,3 +19,7 @@ $ cargo new my-project # 初始化一个模块
 $ cargo build # 编译
 $ cargo run # 启动
 
+测试
+$ cargo new adder --lib  # 新增一个测试adder文件夹
+$ cargo test  # 执行测试
+
