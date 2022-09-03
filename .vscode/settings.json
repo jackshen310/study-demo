@@ -1,6 +1,7 @@
 {
     "rust-analyzer.linkedProjects": [
         "src-rust/project/Cargo.toml",
-        "src-rust/minigrep/Cargo.toml"
+        "src-rust/minigrep/Cargo.toml",
+        "src-rust/closure/Cargo.toml"
     ]
 }
