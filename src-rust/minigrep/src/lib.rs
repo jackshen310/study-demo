@@ -38,12 +38,21 @@ pub struct Config {
 
 impl Config {
     // 返回Result，一般用于处理可能出错的场景
-    pub fn new(args: &Vec<String>) -> Result<Config, &str> {
-        if args.len() < 3 {
-            return Err("not enough arguments");
-        }
-        let query = args[1].clone();
-        let filename = args[2].clone();
+    pub fn new(mut args: env::Args) -> Result<Config, &'static str> {
+        // if args.len() < 3 {
+        //     return Err("not enough arguments");
+        // }
+        args.next();
+
+        let query = match args.next() {
+            Some(v) => v,
+            None => return Err("query is not set"),
+        };
+        let filename = match args.next() {
+            Some(v) => v,
+            None => return Err("filename is not set"),
+        };
+
         let case_sensitive = env::var("CASE_INSENSITIVE").is_err();
 
         Ok(Config {
@@ -61,24 +70,37 @@ impl Config {
  * 5. 返回匹配到的结果列表。
  */
 fn search<'a>(query: &'a str, contents: &'a str) -> Vec<&'a str> {
-    let mut res = Vec::new();
-    for line in contents.lines() {
-        if line.contains(&query) {
-            res.push(line.trim());
-        }
-    }
-    res
+    // let mut res = Vec::new();
+    // for line in contents.lines() {
+    //     if line.contains(&query) {
+    //         res.push(line.trim());
+    //     }
+    // }
+    // res
+
+    // 通过迭代器重构
+    contents
+        .lines()
+        .filter(|line| line.contains(query))
+        .collect()
 }
 
 fn search_case_insensitive<'a>(query: &'a str, contents: &'a str) -> Vec<&'a str> {
-    let mut res = Vec::new();
+    // let mut res = Vec::new();
+    // let query = query.to_lowercase();
+    // for line in contents.lines() {
+    //     if line.to_lowercase().contains(&query) {
+    //         res.push(line.trim());
+    //     }
+    // }
+    // res
+
+    // 用迭代器重构（性能更佳）
     let query = query.to_lowercase();
-    for line in contents.lines() {
-        if line.to_lowercase().contains(&query) {
-            res.push(line.trim());
-        }
-    }
-    res
+    contents
+        .lines()
+        .filter(|line| line.to_lowercase().contains(&query))
+        .collect()
 }
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let contents = fs::read_to_string(config.filename)?;
