@@ -16,6 +16,7 @@ import "antd/dist/antd.css";
 import CanvasKonva from "./pages/canvas-demo/konva";
 import RustDemo from "./pages/rust";
 import WasmDemo from "./pages/wasm/index";
+import CanvasV from "./pages/canvas-demo/v-canvas";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -35,6 +36,7 @@ root.render(
       <Route path="three-basic" element={<ThreeBasic />} />
       <Route path="rust" element={<RustDemo />} />
       <Route path="wasm" element={<WasmDemo />} />
+      <Route path="canvas-v" element={<CanvasV />} />
     </Routes>
   </BrowserRouter>
 );
