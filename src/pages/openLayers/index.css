@@ -1,0 +1,24 @@
+.basic {
+    display: flex;
+    margin: 10px;
+}
+.basic .left {
+    width: 800px;
+    border: solid 1px;
+}
+.basic .left button {
+   margin: 2px;
+}
+.basic .right {
+    width: auto;
+    margin-left: 10px;
+    border: solid 1px;
+}
+.basic .right p {
+   text-align: center;
+}
+
+.basic #openlayers {
+    width: 800px;
+    height: 600px;
+}

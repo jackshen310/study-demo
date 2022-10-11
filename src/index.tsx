@@ -17,6 +17,7 @@ import CanvasKonva from "./pages/canvas-demo/konva";
 import RustDemo from "./pages/rust";
 import WasmDemo from "./pages/wasm/index";
 import CanvasV from "./pages/canvas-demo/v-canvas";
+import OpenLayers from "./pages/openLayers/index";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -37,6 +38,7 @@ root.render(
       <Route path="rust" element={<RustDemo />} />
       <Route path="wasm" element={<WasmDemo />} />
       <Route path="canvas-v" element={<CanvasV />} />
+      <Route path="openLayers" element={<OpenLayers />} />
     </Routes>
   </BrowserRouter>
 );

@@ -7,10 +7,13 @@ const UserDao = require("./user");
 const PostsDao = require("./posts");
 const { nanoid } = require("@reduxjs/toolkit");
 const cors = require("@koa/cors");
+const mime = require("mime-types");
+const serve = require("koa-static");
 
 const app = new Koa();
 app.use(cors());
 app.use(bodyParser());
+app.use(serve(__dirname + "/static"));
 
 app.use(
   route.get("/api/fakeApi/posts", async (ctx) => {

@@ -22,6 +22,7 @@ function App() {
         <Link to="/three-basic">Three-basic</Link>|{" "}
         <Link to="/rust">rust demo</Link>| <Link to="/wasm">wasm demo</Link>|{" "}
         <Link to="/canvas-v">canvas v</Link>
+        <Link to="/openLayers">OpenLayers</Link>
       </nav>
     </div>
   );
