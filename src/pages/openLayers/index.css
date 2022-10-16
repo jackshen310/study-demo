@@ -1,24 +1,18 @@
-.basic {
+.page-openlayers {
+    position:absolute;
     display: flex;
-    margin: 10px;
+    padding-top: 10px;
+    overflow: hidden;
 }
-.basic .left {
-    width: 800px;
+.page-openlayers canvas {
+    /* width: 100%; */
     border: solid 1px;
 }
-.basic .left button {
-   margin: 2px;
-}
-.basic .right {
-    width: auto;
+.page-openlayers .right {
     margin-left: 10px;
-    border: solid 1px;
 }
-.basic .right p {
-   text-align: center;
-}
-
-.basic #openlayers {
+.page-openlayers #openlayers {
     width: 800px;
-    height: 600px;
+    height: 800px;
+    border: solid 1px;
 }

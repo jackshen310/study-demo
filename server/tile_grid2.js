@@ -4,7 +4,7 @@ const gm = require("gm").subClass({ imageMagick: "7+" });
 Promise.promisifyAll(gm.prototype);
 
 async function run() {
-  let imgFile = "orient_100m.tiff";
+  let imgFile = "03.jpeg";
   let TILE_SIZE = 512;
 
   fs.mkdirSync(`static/images/${imgFile}`, { recursive: true });
@@ -35,7 +35,9 @@ async function run() {
       Math.ceil(sizeY / Math.pow(2, maxZoom - curZoom)) - 1,
       0
     );
-    let resizeWidth = Math.min(width, (width / sizeX) * Math.pow(2, curZoom));
+
+    let resizeWidth = (width / sizeX) * (maxX + 1);
+
     console.log(z, maxX, maxY, resizeWidth);
     img.resize(resizeWidth);
     // 将每一个瓦片保存为图片
