@@ -232,6 +232,12 @@ const CanvasBasic = () => {
           editor?.drawLineA();
         },
         text: "画线A",
+      },
+      {
+        click: () => {
+          editor?.drawCircle();
+        },
+        text: "三点画圆",
       }
     );
 

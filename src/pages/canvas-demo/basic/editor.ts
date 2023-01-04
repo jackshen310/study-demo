@@ -1,5 +1,6 @@
 import Tools from "./tools";
 import avatar from "../images/avatar.jpg";
+import circle from "../images/circle.png";
 import Arrow from "./arrow";
 import Ball from "./ball";
 
@@ -568,6 +569,98 @@ class Editor {
       sy = mouse.y;
       canvas.addEventListener("mousemove", onMouseMove);
       canvas.addEventListener("mouseup", onMouseUp);
+    });
+  }
+
+  // 三点画一个圆
+  drawCircle() {
+    const { ctx, canvas, tools } = this;
+
+    let img = new Image();
+    img.src = circle;
+    img.onload = () => {
+      ctx.save();
+      ctx.scale(0.5, 0.5);
+      ctx.drawImage(img, 0, 0);
+      ctx.restore();
+    };
+
+    let points: Array<number> = [];
+    let x = 0;
+    let y = 0;
+    let radian = 0;
+    let radian2 = 0;
+    let counterclockwise = false;
+    canvas.addEventListener("mousedown", () => {
+      let mouse = this.getMouse();
+
+      points.push(mouse.x, mouse.y);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(mouse.x, mouse.y, 3, 0, 360 * R);
+      ctx.closePath();
+      ctx.fillStyle = "red";
+      ctx.fill();
+      ctx.restore();
+
+      if (points.length === 6) {
+        // https://blog.csdn.net/qq_45874328/article/details/114934147
+        let x1 = points[0];
+        let y1 = points[1];
+        let x2 = points[2];
+        let y2 = points[3];
+        let x3 = points[4];
+        let y3 = points[5];
+
+        let a = x1 - x2;
+        let b = y1 - y2;
+        let c = x1 - x3;
+        let d = y1 - y3;
+        let e = (x1 * x1 - x2 * x2 - (y2 * y2 - y1 * y1)) / 2.0;
+        let f = (x1 * x1 - x3 * x3 - (y3 * y3 - y1 * y1)) / 2.0;
+
+        x = (e * d - b * f) / (a * d - b * c);
+        y = (a * f - e * c) / (a * d - b * c);
+
+        let r = Math.sqrt((x1 - x) * (x1 - x) + (y1 - y) * (y1 - y));
+
+        // 计算角度
+        radian = Math.atan2(y1 - y, x1 - x);
+        radian2 = Math.atan2(y3 - y, x3 - x);
+
+        counterclockwise = false;
+        if (
+          Math.abs((radian * 180) / Math.PI) +
+            Math.abs((radian2 * 180) / Math.PI) >
+          180
+        ) {
+          counterclockwise = true;
+        }
+
+        ctx.save();
+        ctx.lineWidth = 3;
+        ctx.translate(x, y);
+        ctx.beginPath();
+        ctx.arc(0, 0, r, radian, radian2, counterclockwise);
+        ctx.strokeStyle = "green";
+        ctx.stroke();
+        ctx.restore();
+      } else if (points.length === 8) {
+        let r2 = Math.sqrt(
+          (points[6] - x) * (points[6] - x) + (points[7] - y) * (points[7] - y)
+        );
+        ctx.save();
+        ctx.lineWidth = 3;
+        ctx.translate(x, y);
+        ctx.beginPath();
+        ctx.arc(0, 0, r2, radian, radian2, counterclockwise);
+        ctx.strokeStyle = "green";
+        ctx.stroke();
+        ctx.restore();
+
+        points.length = 0;
+      }
     });
   }
 }
