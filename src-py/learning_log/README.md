@@ -14,3 +14,5 @@
 from learning_logs.models  import Topic
 Topic.objects.all()
 ```
+13. UI美化
+    1.  安装django-bootstrap4 $ pip3 install django-bootstrap4
