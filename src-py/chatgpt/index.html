@@ -191,7 +191,7 @@
       let form = document.getElementById("form");
       form.addEventListener("submit", function (event) {
         event.preventDefault(); // 阻止表单默认提交行为
-        let url = "http://localhost:5000/image_bot"; // 发送请求的URL
+        let url = "/image_bot"; // 发送请求的URL
         let prompt = form.elements["prompt"].value; // 获取用户输入的prompt值
         let n = form.elements["n"].value; // 获取用户输入的n值
         let size = form.elements["size"].value; // 获取用户选择的size值

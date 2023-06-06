@@ -4,7 +4,7 @@ from flask import Flask,jsonify,request
 from dotenv import load_dotenv
 from flask_cors import CORS
 
-load_dotenv()
+load_dotenv('.env.local')
 
 app = Flask(__name__)
 openai.organization = os.getenv('ORGANIZATION')
