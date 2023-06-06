@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>ImageBot</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f2f2f2;
+      }
+
+      .chat-container {
+        width: 80%;
+        margin: 0 auto;
+        margin-top: 20px;
+        background-color: #fff;
+        border: 1px solid #eee;
+        border-radius: 5px;
+      }
+
+      .chat-header {
+        background-color: #2455e1;
+        color: #fff;
+        padding: 10px;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+      }
+
+      .chat-header h2 {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .chat-body {
+        padding: 20px;
+      }
+
+      .chat-message {
+        margin: 10px 0;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .chat-message .user-avatar {
+        /*文字居中*/
+        text-align: center;
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
+        border-radius: 50%;
+        background-color: #ddd;
+        margin-right: 10px;
+      }
+
+      .chat-message .bot-avatar {
+        text-align: center;
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
+        border-radius: 50%;
+        background-color: #ddd;
+        margin-right: 10px;
+      }
+
+      .chat-message p {
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 16px;
+        line-height: 1.5;
+        background-color: #fff;
+        box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.2);
+        max-width: 70%;
+      }
+
+      .chat-form {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #fff;
+        padding: 10px;
+        border-bottom-left-radius: 5px;
+        border-bottom-right-radius: 5px;
+      }
+
+      .chat-form input[type="text"] {
+        width: 100%;
+        margin-right: 10px;
+        padding: 10px;
+        font-size: 18px;
+        border: none;
+        border-radius: 5px;
+        box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.2);
+      }
+
+      .chat-form input[type="number"] {
+        margin-right: 10px;
+        padding: 10px;
+        font-size: 18px;
+        border: none;
+        border-radius: 5px;
+        box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.2);
+      }
+
+      .chat-form select {
+        margin-right: 10px;
+        padding: 10px;
+        font-size: 18px;
+        border: none;
+        border-radius: 5px;
+        box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.2);
+      }
+
+      .chat-form input[type="text"]:focus {
+        outline: none;
+        box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.5);
+      }
+
+      .chat-form button {
+        background-color: #2455e1;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-size: 18px;
+        box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.2);
+      }
+
+      .chat-form button:hover {
+        background-color: #fff;
+        color: #2455e1;
+        border: 1px solid #2455e1;
+      }
+      /* 遮罩层 */
+      #loading {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8);
+        top: 0;
+        left: 0;
+        z-index: 1000;
+      }
+
+      /* 加载动画 */
+      .loader {
+        border: 5px solid #f3f3f3; /* 加载动画的背景色 */
+        border-top: 5px solid #3498db; /* 加载动画的前景色 */
+        -webkit-animation: spin 1s linear infinite; /* 加载动画的旋转动画 */
+        animation: spin 1s linear infinite;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        margin: -25px 0 0 -25px;
+      }
+
+      /* 加载动画旋转动画 */
+      @-webkit-keyframes spin {
+        0% {
+          -webkit-transform: rotate(0deg);
+        }
+        100% {
+          -webkit-transform: rotate(360deg);
+        }
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <script>
+    const chatBody = [];
+    window.onload = function () {
+      let form = document.getElementById("form");
+      form.addEventListener("submit", function (event) {
+        event.preventDefault(); // 阻止表单默认提交行为
+        let url = "http://localhost:5000/image_bot"; // 发送请求的URL
+        let prompt = form.elements["prompt"].value; // 获取用户输入的prompt值
+        let n = form.elements["n"].value; // 获取用户输入的n值
+        let size = form.elements["size"].value; // 获取用户选择的size值
+        let data = { prompt: prompt, n: n, size: size }; // 构造请求参数
+
+        showLoading();
+        fetch(url, {
+          method: "POST", // 指定请求方法为POST
+          headers: {
+            "Content-Type": "application/json", // 设置请求头
+          },
+          mode: "cors", // 设置跨域请求
+          body: JSON.stringify(data), //设置请求体的内容
+        })
+          .then((response) => response.json()) // 处理响应内容
+          .then((data) => {
+            console.log(data);
+            let user = prompt;
+            let imgHtml = data.data.map((item) => {
+              return `<img
+                    style="max-width: 256px; max-height: 256px"
+                    src="${item.url}"
+                    />`;
+            });
+            let div = document.createElement("div");
+            div.innerHTML = `
+                    <div class="chat-message">
+                <div class="user-avatar">User</div>
+                <p>${user}</p>
+                </div>
+                <div class="chat-message">
+                <div >
+                   ${imgHtml.join("")}
+                </div>
+                <div class="bot-avatar">Bot</div>
+                </div>
+            `;
+            document.getElementById("chat-body").appendChild(div);
+
+            hideLoading();
+          }) // 输出响应内容
+          .catch((error) => {
+            console.log(error);
+            hideLoading();
+          }); // 输出错误信息
+      });
+
+      // 获取包含img元素的div元素
+      var container = document.getElementById("chat-body");
+
+      // 使用事件委托来监听img元素的点击事件
+      container.addEventListener("click", function (event) {
+        // 确保点击的是img元素
+        if (event.target.nodeName === "IMG") {
+          // 处理img元素的点击事件
+          console.log("Clicked on:", event.target.src);
+          // 创建新窗口并打开图片
+          window.open(event.target.src, "_blank");
+        }
+      });
+    };
+
+    function showLoading() {
+      document.querySelector("#loading").style.display = "block";
+    }
+    function hideLoading() {
+      document.querySelector("#loading").style.display = "none";
+    }
+  </script>
+
+  <body>
+    <div class="chat-container">
+      <div class="chat-header">
+        <h2>ImageBot</h2>
+      </div>
+      <div id="loading" style="display: none">
+        <div class="loader"></div>
+      </div>
+      <div id="chat-body" class="chat-body"></div>
+      <form id="form" class="chat-form">
+        <input required type="text" name="prompt" placeholder="prompt..." />
+        <input required type="number" value="1" name="n" min="1" max="10" />
+        <select required name="size" value="256x256" id="size">
+          <option value="256x256">256x256</option>
+          <option value="512x512">512x512</option>
+          <option value="1024x1024">1024x1024</option>
+        </select>
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  </body>
+</html>
