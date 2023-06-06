@@ -81,8 +81,10 @@
       }
 
       .chat-form {
+        /*子div宽度超出就换行*/
+        flex-wrap: wrap;
         display: flex;
-        justify-content: space-between;
+        /* justify-content: space-between; */
         align-items: center;
         background-color: #fff;
         padding: 10px;
@@ -91,7 +93,8 @@
       }
 
       .chat-form input[type="text"] {
-        width: 100%;
+        /* width: 100%; */
+        min-width: 500px;
         margin-right: 10px;
         padding: 10px;
         font-size: 18px;
