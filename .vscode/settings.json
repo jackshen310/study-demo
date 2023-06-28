@@ -5,5 +5,5 @@
         "src-rust/closure/Cargo.toml",
         "src-rust/add/Cargo.toml",
         "src-rust/pointer/Cargo.toml"
-    ]
+    ],
 }

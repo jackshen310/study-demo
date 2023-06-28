@@ -24,7 +24,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+.env.local
+
 **/target
 
 server/input
 server/static
+
+**/ll_env
+**/__pycache__

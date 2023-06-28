@@ -40,3 +40,9 @@ maps["age"] = 18
 for key, value in maps.items():  # 遍历
     print(f"\nkey:{key}")
     print(f"value:{value}")
+
+response_dict = {'by': 'ea016', 'id': 34296785, 'score': 1, 'time': 1673161202,
+                 'title': 'PhotoRoom Is Hiring a Fullstack API Developer (OpenAPI, Python, React) in Paris', 'type': 'job', 'url': 'https://jobs.lever.co/photoroom/29260c53-a84f-4d4f-a322-3bdc8540cdb7?lever-origin=applied&lever-source%5B%5D=yc'}
+if "descendants" not in response_dict:
+    response_dict["descendants"] = "abc"
+print(response_dict["descendants"])

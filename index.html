@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Image Brightness and Contrast Adjustment</title>
+    <style>
+      canvas {
+        border: 1px solid black;
+      }
+    </style>
+    <script
+      src="https://docs.opencv.org/master/opencv.js"
+      type="text/javascript"
+    ></script>
+  </head>
+  <body>
+    <canvas id="myCanvas"></canvas>
+    <canvas id="destinationCanvas"></canvas>
+
+    <script>
+      function adjustImageBrightnessContrast(imageData, brightness, contrast) {
+        // 按照亮度和对比度进行调整
+        contrast = contrast / 100 + 1; // 对比度转换成[0,2]范围
+        brightness = brightness * 255; // 亮度转换成[0,255]范围
+
+        let data = imageData.data;
+        let len = data.length;
+
+        for (let i = 0; i < len; i += 4) {
+          let red = data[i];
+          let green = data[i + 1];
+          let blue = data[i + 2];
+
+          // 先应用对比度，再应用亮度
+          red = ((red / 255 - 0.5) * contrast + 0.5) * 255 + brightness;
+          green = ((green / 255 - 0.5) * contrast + 0.5) * 255 + brightness;
+          blue = ((blue / 255 - 0.5) * contrast + 0.5) * 255 + brightness;
+
+          // 确保值在[0, 255]范围内
+          data[i] = Math.max(0, Math.min(255, red));
+          data[i + 1] = Math.max(0, Math.min(255, green));
+          data[i + 2] = Math.max(0, Math.min(255, blue));
+        }
+      }
+
+      let canvas = document.getElementById("myCanvas");
+      let ctx = canvas.getContext("2d");
+
+      let img = new Image();
+      img.src = "3.png";
+      img.onload = function () {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+
+        // let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        // adjustImageBrightnessContrast(imageData, 10, 50); // 提高10%亮度和20%对比度
+        // ctx.putImageData(imageData, 0, 0);
+
+        let src = cv.imread("myCanvas"); // 从canvas中读取图像
+        let dst = new cv.Mat();
+        let gray = new cv.Mat();
+
+        // 转换到灰度图像
+        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
+
+        // 创建CLAHE对象并应用
+        let clahe = new cv.CLAHE();
+        clahe.setClipLimit(40);
+        clahe.apply(gray, dst);
+
+        // 将处理后的图像显示到另一个canvas中
+        cv.imshow("destinationCanvas", dst);
+
+        // 释放内存
+        src.delete();
+        dst.delete();
+        gray.delete();
+        clahe.delete();
+      };
+    </script>
+  </body>
+</html>
